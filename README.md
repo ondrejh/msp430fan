@@ -1,15 +1,12 @@
-msp430_dcf77_clock
-==================
+msp430solar - solar panel pump switch
+=====================================
 
-Home automation clock based on MSP430 launchpad with DCF77 receiver.
+Home automation swimming pool solar panel pump switch using msp430 launchpad.
 
 Done:
 
-    - RTC clock counting time (using 32kHz quartz)
-    - 16x2 LCD (4bit connection)
-    - DCF77 receiver connected
-    - DCF77 synchronizatin
+	- cloned and cleared one of mine older projects - used as the base for this one
 
 Todo:
 
-    - add some outputs, menu, functions
+	- connect some digital temperature sensors (ds18b20)
