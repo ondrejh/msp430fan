@@ -13,6 +13,7 @@
 
 // include section
 #include <msp430g2553.h>
+#include <string.h>
 
 #include "uart.h"
 
@@ -34,12 +35,17 @@
 // uart buffer length (mask preferred)
 #define UART_TX_BUFLEN 16
 #define UART_TX_BUFMASK 0x0F
+#define UART_RX_BUFLEN 16
 
-// uart circular buffer
+// uart tx circular buffer
 char uart_tx_buffer[UART_TX_BUFLEN]={'\0'};
 unsigned int uart_tx_inptr=0, uart_tx_outptr=0;
 // uart transmit flag (0 not transmitting, 1 transmitting)
 bool uart_tx_transmitt = false;
+// uart rx circular buffer
+char uart_rx_buffer[UART_RX_BUFLEN]={"\n\0"};
+unsigned int uart_rx_ptr=1;
+
 
 // local function definition
 int uart_start_tx(void);
@@ -140,18 +146,47 @@ int uart_puts(char *s)
 
 // interrupt handlers
 
+
+
+void use_rx_buffer(int bufptr)
+{
+    char cmdbuf[UART_RX_BUFLEN];
+    int cmdlen = 0;
+    int locbufptr = (bufptr-1)%UART_RX_BUFLEN;
+
+    // find command begin
+    while (uart_rx_buffer[locbufptr]!='\n') locbufptr=(locbufptr-1)%UART_RX_BUFLEN;
+    locbufptr=(locbufptr+1)%UART_RX_BUFLEN;
+
+    // copy command to the buffer (with \0 at the end)
+    while (uart_rx_buffer[locbufptr]!='\n') {cmdbuf[cmdlen++]=uart_rx_buffer[locbufptr++]; locbufptr%=UART_RX_BUFLEN;}
+    cmdbuf[cmdlen]='\0';
+
+    // test commands
+    if (strncmp(cmdbuf,"?\0",2)==0) uart_puts("Hello World!\n\r");
+}
+
 // uart RX interrupt handler
 #pragma vector=USCIAB0RX_VECTOR
 __interrupt void USCI0RX_ISR(void)
 {
     tx_output_enable(true);
 	//UART_TX_LED_ON();
+	bool error = UCA0STAT & (UCFE|UCOE|UCPE|UCBRK|UCRXERR);
 	char c = UCA0RXBUF;		// read char
-    if (c=='?')
-    {
-        uart_puts("Hello World!\n");
+	if (!error)
+	{
+	    if (c=='\r') c='\n'; // map carrige return to new line (helps with minicom testing)
+
+	    uart_rx_buffer[uart_rx_ptr]=c; // save char to input buffer
+        if (c=='\n')
+        {
+            use_rx_buffer(uart_rx_ptr);
+        }
+
+	    uart_rx_ptr++; // increase buffer pointer
+	    if (uart_rx_ptr>=UART_RX_BUFLEN) uart_rx_ptr=0;
 	}
-	//uart_putc(c); // echo
 }
 
 // uart TX interrupt handler
