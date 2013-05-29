@@ -28,6 +28,7 @@
 #include <msp430g2553.h>
 
 #include "uart.h"
+#include "rtc.h"
 
 // board (leds)
 #define LED_INIT() {P1DIR|=0x41;P1OUT&=~0x41;}
@@ -60,6 +61,7 @@ int main(void)
 
 	board_init(); // init dco and leds
 	uart_init(); // init uart
+	rtc_timer_init(); // init rtc timer
 
 	while(1)
 	{

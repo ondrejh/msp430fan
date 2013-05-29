@@ -9,4 +9,5 @@ Done:
 
 Todo:
 
+    - time set via uart and time print
 	- connect some digital temperature sensors (ds18b20)
