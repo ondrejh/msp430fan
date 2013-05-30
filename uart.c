@@ -16,6 +16,7 @@
 #include <string.h>
 
 #include "uart.h"
+#include "comm.h"
 
 // uart TX led
 #define UART_TX_LED 1
@@ -31,11 +32,6 @@
 	#define UART_TX_LED_ON()
 #endif
 #undef UART_TX_LED
-
-// uart buffer length (mask preferred)
-#define UART_TX_BUFLEN 16
-#define UART_TX_BUFMASK 0x0F
-#define UART_RX_BUFLEN 16
 
 // uart tx circular buffer
 char uart_tx_buffer[UART_TX_BUFLEN]={'\0'};
@@ -155,7 +151,7 @@ void use_rx_buffer(int bufptr)
     int locbufptr = (bufptr-1)%UART_RX_BUFLEN;
 
     // find command begin
-    while (uart_rx_buffer[locbufptr]!='\n') locbufptr=(locbufptr-1)%UART_RX_BUFLEN;
+    while (uart_rx_buffer[locbufptr]!='\n') locbufptr=(locbufptr-1)&UART_RX_BUFMASK;
     locbufptr=(locbufptr+1)%UART_RX_BUFLEN;
 
     // copy command to the buffer (with \0 at the end)
@@ -163,7 +159,7 @@ void use_rx_buffer(int bufptr)
     cmdbuf[cmdlen]='\0';
 
     // test commands
-    if (strncmp(cmdbuf,"?\0",2)==0) uart_puts("Hello World!\n\r");
+    use_command(cmdbuf);
 }
 
 // uart RX interrupt handler

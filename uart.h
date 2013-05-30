@@ -17,6 +17,12 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+// uart buffer length (mask preferred)
+#define UART_TX_BUFLEN 16
+#define UART_TX_BUFMASK 0x0F
+#define UART_RX_BUFLEN 16
+#define UART_RX_BUFMASK 0x0F
+
 char h2c(unsigned int h); // hex to char
 int8_t c2h(char c); // char to hex
 
