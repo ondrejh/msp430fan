@@ -19,7 +19,7 @@ typedef struct
 bool timeset; // set true if time was set
 
 void rtc_set_time(tstruct *tset); // time synchronization
-void rtc_get_time(tstruct *tget); // get time function
+bool rtc_get_time(tstruct *tget); // get time function
 
 void rtc_timer_init(void); // init function
 

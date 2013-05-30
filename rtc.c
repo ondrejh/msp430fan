@@ -80,10 +80,11 @@ void rtc_set_time(tstruct *tset)
 }
 
 // get time function
-void rtc_get_time(tstruct *tget)
+bool rtc_get_time(tstruct *tget)
 {
     uint8_t ptr = tptr;
     memcpy(tget,&tbuff[ptr],sizeof(tstruct));
+    return timeset;
 }
 
 // init rtc timer (32kHz Xtal)
