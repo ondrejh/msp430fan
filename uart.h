@@ -18,8 +18,8 @@
 #include <stdbool.h>
 
 // uart buffer length (mask preferred)
-#define UART_TX_BUFLEN 16
-#define UART_TX_BUFMASK 0x0F
+#define UART_TX_BUFLEN 64
+#define UART_TX_BUFMASK 0x3F
 #define UART_RX_BUFLEN 16
 #define UART_RX_BUFMASK 0x0F
 
