@@ -92,6 +92,30 @@ int float2str(char *s, float f, int d)
     return s-sptr;
 }
 
+int getdec(uint16_t val)
+{
+    switch(val&0x000F)
+    {
+        case 0x0: return 0;
+        case 0x1: return 1;
+        case 0x2: return 1;
+        case 0x3: return 2;
+        case 0x4: return 3;
+        case 0x5: return 3;
+        case 0x6: return 4;
+        case 0x7: return 4;
+        case 0x8: return 5;
+        case 0x9: return 6;
+        case 0xA: return 6;
+        case 0xB: return 7;
+        case 0xC: return 8;
+        case 0xD: return 8;
+        case 0xE: return 9;
+        case 0xF: return 9;
+    }
+    return -1;
+}
+
 int use_command(char *cmdbuf)
 {
     int cmdlen = strlen(cmdbuf);
@@ -146,7 +170,7 @@ int use_command(char *cmdbuf)
         return 0;
     }
 
-    // print temperature: "T?"
+    /*// print temperature: "T?"
     if ((cmdlen==2) && (strncmp(cmdbuf,"T?\0",3)==0))
     {
         float temp[3] = {25.8, -15.7, 5.4};
@@ -162,13 +186,18 @@ int use_command(char *cmdbuf)
             uart_puts(str);
         }
         return 0;
-    }
+    }*/
 
     // print temp command: "T?"
     if ((cmdlen==2) && (strncmp(cmdbuf,"T?\0",3)==0))
     {
         char retstr[UART_TX_BUFLEN];
-        sprintf(retstr,"T %04Xh\n\r",temp);
+        char *s = retstr;
+        strncpy(s,"\nT ",3); s+=3;
+        s+=uint2str(s,temp>>4,3);
+        *s++='.';
+        s+=uint2str(s,getdec(temp),1);
+        strncpy(s,"C\n\r\0",4); //s+=4
         uart_puts(retstr);
         return 0;
     }
