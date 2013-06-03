@@ -14,7 +14,7 @@
 #include "rtc.h"
 
 // switch on (1) and off (0) debug blinking
-#define RTC_LED 1
+#define RTC_LED 0
 #if RTC_LED==1
     // launchpad green led (P1.4 active high)
     #define RTC_LED_INIT() {P1DIR|=0x40;P1OUT&=~0x40;}

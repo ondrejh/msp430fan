@@ -29,6 +29,8 @@
 
 #include "uart.h"
 #include "rtc.h"
+#include "ds18b20.h"
+#include "comm.h"
 
 // board (leds)
 #define LED_INIT() {P1DIR|=0x41;P1OUT&=~0x41;}
@@ -62,10 +64,22 @@ int main(void)
 	board_init(); // init dco and leds
 	uart_init(); // init uart
 	rtc_timer_init(); // init rtc timer
+	timer_init();
+	ds18b20_init();
 
 	while(1)
 	{
         __bis_SR_register(CPUOFF + GIE); // enter sleep mode (leave on rtc second event)
+        ds18b20_bus_reset();
+        ds18b20_write_byte(0xCC);
+        ds18b20_write_byte(0x44);
+        __bis_SR_register(CPUOFF + GIE); // enter sleep mode (leave on rtc second event)
+        ds18b20_bus_reset();
+        ds18b20_write_byte(0xCC);
+        ds18b20_write_byte(0xBE);
+        uint8_t b1 = ds18b20_read_byte();
+        uint8_t b2 = ds18b20_read_byte();
+        temp = ((uint16_t)b2<<8) | (uint16_t)b1;
 	}
 
 	return -1;

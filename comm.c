@@ -5,6 +5,8 @@
 #include "uart.h"
 #include "rtc.h"
 
+uint16_t temp = 0;
+
 int decode_day(char *day)
 {
     if (strncmp(day,"MON",3)==0) return 0; // monday
@@ -92,6 +94,15 @@ int use_command(char *cmdbuf)
         encode_day(t.dayow,daystr);
         char retstr[UART_TX_BUFLEN];
         sprintf(retstr,"%s %02d:%02d:%02d\n\r",daystr,t.hour,t.minute,t.second);
+        uart_puts(retstr);
+        return 0;
+    }
+
+    // print temp command: "T?"
+    if ((cmdlen==2) && (strncmp(cmdbuf,"T?\0",3)==0))
+    {
+        char retstr[UART_TX_BUFLEN];
+        sprintf(retstr,"T %04Xh\n\r",temp);
         uart_puts(retstr);
         return 0;
     }
