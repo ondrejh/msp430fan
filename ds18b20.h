@@ -3,6 +3,12 @@
 
 #include <inttypes.h>
 
+// union converting data into temperature
+typedef union{
+    uint8_t d[9];
+    int16_t temp;
+} ds18b20_data_t;
+
 // sensor context struct
 typedef struct {
     volatile uint8_t *port_out;
@@ -11,7 +17,7 @@ typedef struct {
     volatile uint8_t *port_dir;
     uint8_t port_mask;
 
-    int16_t temp;
+    ds18b20_data_t data;
     bool valid;
 } ds18b20_sensor_t;
 

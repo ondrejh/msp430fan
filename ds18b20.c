@@ -137,9 +137,8 @@ void ds18b20_read_conversion(ds18b20_sensor_t *s)
     ds18b20_bus_reset(s);
     ds18b20_write_byte(s,0xCC);
     ds18b20_write_byte(s,0xBE);
-    int i; uint8_t data[9];
-    for (i=0;i<10;i++) data[i]=ds18b20_read_byte(s);
-    s->temp = ((uint16_t)data[1]<<8) | (uint16_t)data[0];
-    if (crc8(data,8)==data[8]) s->valid = true;
+    int i;
+    for (i=0;i<10;i++) s->data.d[i]=ds18b20_read_byte(s);
+    if (crc8(s->data.d,8)==s->data.d[8]) s->valid = true;
     else s->valid = false;
 }

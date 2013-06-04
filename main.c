@@ -65,16 +65,19 @@ int main(void)
 	uart_init(); // init uart
 	rtc_timer_init(); // init rtc timer
 
-	ds18b20_sensor_t s1;
-	ds18b20_init(&s1,&P1OUT,&P1IN,&P1REN,&P1DIR,7); // init ds18b20 sensor
+	ds18b20_sensor_t s[3]; // init ds18b20 sensors
+	ds18b20_init(&s[0],&P1OUT,&P1IN,&P1REN,&P1DIR,7); // sensor 0: PORT1 pin 7
+	ds18b20_init(&s[1],&P2OUT,&P2IN,&P2REN,&P2DIR,1); // sensor 1: PORT2 pin 1
+	ds18b20_init(&s[2],&P2OUT,&P2IN,&P2REN,&P2DIR,2); // sensor 2: PORT2 pin 2
 
 	while(1)
 	{
+	    int i;
         __bis_SR_register(CPUOFF + GIE); // enter sleep mode (leave on rtc second event)
-        ds18d20_start_conversion(&s1);
+        for (i=0;i<3;i++) ds18d20_start_conversion(&s[i]);
         __bis_SR_register(CPUOFF + GIE); // enter sleep mode (leave on rtc second event)
-        ds18b20_read_conversion(&s1);
-        if (s1.valid) temp=s1.temp;
+        for (i=0;i<3;i++) ds18b20_read_conversion(&s[i]);
+        if (s[0].valid) temp=s[0].data.temp;
 	}
 
 	return -1;
