@@ -4,7 +4,7 @@
 #include "uart.h"
 #include "rtc.h"
 
-uint16_t temp = 0;
+int16_t temp = 0;
 
 int decode_day(char *day)
 {
@@ -193,10 +193,12 @@ int use_command(char *cmdbuf)
     {
         char retstr[UART_TX_BUFLEN];
         char *s = retstr;
+        int16_t t = temp;
         strncpy(s,"\nT ",3); s+=3;
-        s+=uint2str(s,temp>>4,3);
+        if (t<0) {*s++='-'; t=-t;}
+        s+=uint2str(s,t>>4,0);
         *s++='.';
-        s+=uint2str(s,getdec(temp),1);
+        s+=uint2str(s,getdec(t),1);
         strncpy(s,"C\n\r\0",4); //s+=4
         uart_puts(retstr);
         return 0;

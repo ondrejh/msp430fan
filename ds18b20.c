@@ -1,124 +1,145 @@
 #include <msp430g2553.h>
 #include <stdbool.h>
 #include "ds18b20.h"
+#include "crc8.h"
 
-typedef struct
-{
-    uint16_t tstart;
-} timer_t;
+#define wait(x) __delay_cycles(x)
 
-void timer_init(void)
-{
-    TACTL = TASSEL_2 + MC_2 + ID_0;	// SMCLK, contmode, fosc/8
-}
 
-void timer_wait(uint16_t timeout)
-{
-    uint16_t tstart = TAR;
-    while ((TAR-tstart)<timeout) {};
-}
+// sensor context struct
 
-void timer_start(timer_t *t)
-{
-    t->tstart = TAR;
-}
 
-bool timer_timeout(timer_t *t, uint16_t timeout)
-{
-    if ((TAR-t->tstart)<timeout) return false;
-    return true;
-}
+// local function prototypes
 
-uint16_t timer_runtime(timer_t *t)
-{
-    return (TAR-t->tstart);
-}
+void ds18b20_bus_reset(ds18b20_sensor_t *s);
 
-void ds18b20_init(void)
-{
-    P1DIR &= ~0x80;
-    P1OUT &= ~0x80;
-}
+void ds18b20_write_zero(ds18b20_sensor_t *s);
+void ds18b20_write_one(ds18b20_sensor_t *s);
+void ds18b20_write_byte(ds18b20_sensor_t *s, uint8_t b);
 
-int ds18b20_bus_reset(void)
+int ds18b20_read_bit(ds18b20_sensor_t *s);
+uint8_t ds18b20_read_byte(ds18b20_sensor_t *s);
+
+
+// local functions implementation
+
+void ds18b20_bus_reset(ds18b20_sensor_t *s)
 {
     // pull bus low
-    P1OUT &= ~0x80;
-    P1DIR |= 0x80;
+    *(s->port_out) &= ~(s->port_mask); // P1OUT &= ~0x80;
+    *(s->port_dir) |=  (s->port_mask); // P1DIR |= 0x80;
     // wait 480us
-    timer_wait(480);
+    wait(480);
     // release the bus
-    P1DIR &= ~0x80;
-    // wait 100us if presence pulse comes
-    timer_t t;
-    timer_start(&t);
-    while ((P1IN&0x80)==0) if (timer_timeout(&t,100)) return -1;
-    // wait up to 480us
-    while (!timer_timeout(&t,500)) {};
-    // test if bus already high
-    if ((P1IN & 0x80)==0) return -2; // presence pulse too long (bus is probably shorted)
-
-    return 0;
+    *(s->port_dir) &= ~(s->port_mask); // P1DIR &= ~0x80;
+    // wait 480us
+    wait(480);
 }
 
-void ds18b20_write_zero(void)
+void ds18b20_write_zero(ds18b20_sensor_t *s)
 {
     // pull bus low
-    //P1OUT &= ~0x80;
-    P1DIR |= 0x80;
+    *(s->port_out) &= ~(s->port_mask); // P1OUT &= ~0x80;
+    *(s->port_dir) |=  (s->port_mask); // P1DIR |= 0x80;
     // wait 60us
-    timer_wait(60);
+    wait(60);
     // release the bus
-    P1DIR &= ~0x80;
+    *(s->port_dir) &= ~(s->port_mask); // P1DIR &= ~0x80;
 }
 
-void ds18b20_write_one(void)
+void ds18b20_write_one(ds18b20_sensor_t *s)
 {
     // pull bus low
-    //P1OUT &= ~0x80;
-    P1DIR |= 0x80;
+    *(s->port_out) &= ~(s->port_mask); // P1OUT &= ~0x80;
+    *(s->port_dir) |=  (s->port_mask); // P1DIR |= 0x80;
     // release the bus
-    P1DIR &= ~0x80;
+    *(s->port_dir) &= ~(s->port_mask); // P1DIR &= ~0x80;
     // wait 60us
-    timer_wait(60);
+    wait(60);
 }
 
-void ds18b20_write_byte(uint8_t b)
+void ds18b20_write_byte(ds18b20_sensor_t *s, uint8_t b)
 {
     uint8_t mask = 0x01;
     while (mask!=0)
     {
-        if ((b&mask)!=0) ds18b20_write_one();
-        else ds18b20_write_zero();
+        if ((b&mask)!=0) ds18b20_write_one(s);
+        else ds18b20_write_zero(s);
         mask<<=1;
     }
 }
 
-bool ds18b20_read_bit(void)
+int ds18b20_read_bit(ds18b20_sensor_t *s)
 {
-    //timer_t t;
-    bool retval = false;
+    int retval = 0;
     // pull bus low
-    P1OUT &= ~0x80;
-    P1DIR |= 0x80;
+    //P1OUT &= ~0x80;
+    //P1DIR |= 0x80;
+    *(s->port_out) &= ~(s->port_mask);
+    *(s->port_dir) |=  (s->port_mask);
     // release the bus
-    P1DIR &= ~0x80;
+    //P1DIR &= ~0x80;
+    *(s->port_dir) &= ~(s->port_mask);
     // test input
-    if ((P1IN&0x80)!=0) retval = true;
+    //if ((P1IN&0x80)!=0) retval = 1;
+    if ((*(s->port_in)&0x80)!=0) retval = 1;
     // wait 60 us
-    timer_wait(60);
+    wait(60);
     // return
     return retval;
 }
 
-uint8_t ds18b20_read_byte(void)
+uint8_t ds18b20_read_byte(ds18b20_sensor_t *s)
 {
     uint8_t mask = 0x01;
     uint8_t retval = 0;
     while (mask!=0)
     {
-        if (ds18b20_read_bit()) retval|=mask;
+        if (ds18b20_read_bit(s)) retval|=mask;
         mask<<=1;
     }
     return retval;
+}
+
+
+// interface functions implementation
+
+void ds18b20_init(ds18b20_sensor_t *s,
+                  volatile uint8_t *p_out,
+                  const volatile uint8_t *p_in,
+                  volatile uint8_t *p_ren,
+                  volatile uint8_t *p_dir,
+                  int pin)
+{
+    (s->port_out) = p_out;
+    (s->port_dir) = p_dir;
+    (s->port_ren) = p_ren;
+    (s->port_in)  = p_in;
+    s->port_mask = (1<<pin);
+
+    *(s->port_dir) &= ~(s->port_mask);
+    *(s->port_out) &= ~(s->port_mask);
+    *(s->port_ren) &= ~(s->port_mask);
+
+    /*P1DIR &= ~0x80;
+    P1OUT &= ~0x80;*/
+}
+
+void ds18d20_start_conversion(ds18b20_sensor_t *s)
+{
+    ds18b20_bus_reset(s);
+    ds18b20_write_byte(s,0xCC);
+    ds18b20_write_byte(s,0x44);
+}
+
+void ds18b20_read_conversion(ds18b20_sensor_t *s)
+{
+    ds18b20_bus_reset(s);
+    ds18b20_write_byte(s,0xCC);
+    ds18b20_write_byte(s,0xBE);
+    int i; uint8_t data[9];
+    for (i=0;i<10;i++) data[i]=ds18b20_read_byte(s);
+    s->temp = ((uint16_t)data[1]<<8) | (uint16_t)data[0];
+    if (crc8(data,8)==data[8]) s->valid = true;
+    else s->valid = false;
 }
