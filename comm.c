@@ -1,3 +1,10 @@
+/**
+ * communication interface module (hooked to uart)
+ *
+ * description: module parses incomming messages and answers or responds to it
+ *
+ **/
+
 #include <string.h>
 
 #include "comm.h"
@@ -169,24 +176,6 @@ int use_command(char *cmdbuf)
         uart_puts(str);
         return 0;
     }
-
-    /*// print temperature: "T?"
-    if ((cmdlen==2) && (strncmp(cmdbuf,"T?\0",3)==0))
-    {
-        float temp[3] = {25.8, -15.7, 5.4};
-        int i;
-        uart_putc('\n');
-        for (i=0;i<3;i++)
-        {
-            char str[UART_TX_BUFLEN];
-            char *s = str;
-            *s++='T'; *s++=('1'+i); *s++=' ';
-            s+=float2str(s,temp[i],2);
-            strncpy(s,"C\n\r\0",4); //s+=4;
-            uart_puts(str);
-        }
-        return 0;
-    }*/
 
     // print temp command: "T?"
     if ((cmdlen==2) && (strncmp(cmdbuf,"T?\0",3)==0))

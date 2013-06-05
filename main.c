@@ -21,6 +21,10 @@
 //            |                 |
 //            |             P1.3|----> BUTTON
 //            |                 |
+//            |             P2.0|<---> Temp. sensor DS18B20 (panel low.s.)
+//            |             P2.1|<---> Temp. sensor DS18B20 (panel high.s.)
+//            |             P2.2|<---> Temp. sensor DS18B20 (pool)
+//            |                 |
 //
 //******************************************************************************
 
@@ -48,10 +52,6 @@ void board_init(void)
 	// oscillator
 	BCSCTL1 = CALBC1_1MHZ;		// Set DCO
 	DCOCTL = CALDCO_1MHZ;
-	/*BCSCTL1 = CALBC1_8MHZ;	// Set DCO
-	DCOCTL = CALDCO_8MHZ;
-	BCSCTL1 = CALBC1_16MHZ;		// Set DCO
-	DCOCTL = CALDCO_16MHZ;*/
 
 	LED_INIT(); // leds
 }
@@ -66,7 +66,7 @@ int main(void)
 	rtc_timer_init(); // init rtc timer
 
 	ds18b20_sensor_t s[3]; // init ds18b20 sensors
-	ds18b20_init(&s[0],&P1OUT,&P1IN,&P1REN,&P1DIR,7); // sensor 0: PORT1 pin 7
+	ds18b20_init(&s[0],&P2OUT,&P2IN,&P2REN,&P2DIR,0); // sensor 0: PORT2 pin 0
 	ds18b20_init(&s[1],&P2OUT,&P2IN,&P2REN,&P2DIR,1); // sensor 1: PORT2 pin 1
 	ds18b20_init(&s[2],&P2OUT,&P2IN,&P2REN,&P2DIR,2); // sensor 2: PORT2 pin 2
 

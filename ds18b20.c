@@ -1,12 +1,36 @@
+/**
+ * ds18b20 sensor module for msp430g2553@1MHz
+ *
+ * author: ondrejh.ck@email.cz
+ * date: 6.2013
+ *
+ * example usage (PORT 1, PIN7):
+ *
+ *    ds18b20_sensor_t s; // create sensors context
+ *    ds18b20_init(&s,&P1OUT,&P1IN,&P1REN,&P1DIR,7); // init context
+ *    ...
+ *    ds18b20_start_conversion(&s); // start temperature conversion
+ *    sleep(1); // wait for conversion result (min 750ms)
+ *    ...
+ *    ds18b20_read_conversion(&s); // get data from sensor
+ *    ...
+ *    if ((s.valid)==true) // check if read data valid
+ *    {
+ *      printf("Treg %d\n",s.temp); // show it
+ *    }
+ *    else
+ *    {
+ *      printf("!ERROR!\n"); // show error
+ *    }
+ *
+ */
+
 #include <msp430g2553.h>
 #include <stdbool.h>
 #include "ds18b20.h"
 #include "crc8.h"
 
 #define wait(x) __delay_cycles(x)
-
-
-// sensor context struct
 
 
 // local function prototypes
@@ -104,6 +128,7 @@ uint8_t ds18b20_read_byte(ds18b20_sensor_t *s)
 
 // interface functions implementation
 
+// sensors context and port initialization
 void ds18b20_init(ds18b20_sensor_t *s,
                   volatile uint8_t *p_out,
                   const volatile uint8_t *p_in,
@@ -111,20 +136,21 @@ void ds18b20_init(ds18b20_sensor_t *s,
                   volatile uint8_t *p_dir,
                   int pin)
 {
+    // copy arguments into context
     (s->port_out) = p_out;
     (s->port_dir) = p_dir;
     (s->port_ren) = p_ren;
     (s->port_in)  = p_in;
+    // get port mask
     s->port_mask = (1<<pin);
 
+    // setup port
     *(s->port_dir) &= ~(s->port_mask);
     *(s->port_out) &= ~(s->port_mask);
     *(s->port_ren) &= ~(s->port_mask);
-
-    /*P1DIR &= ~0x80;
-    P1OUT &= ~0x80;*/
 }
 
+// send start conversion command
 void ds18d20_start_conversion(ds18b20_sensor_t *s)
 {
     ds18b20_bus_reset(s);
@@ -132,6 +158,7 @@ void ds18d20_start_conversion(ds18b20_sensor_t *s)
     ds18b20_write_byte(s,0x44);
 }
 
+// read converted data and test crc
 void ds18b20_read_conversion(ds18b20_sensor_t *s)
 {
     ds18b20_bus_reset(s);
