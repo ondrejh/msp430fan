@@ -10,8 +10,20 @@
 #include "comm.h"
 #include "uart.h"
 #include "rtc.h"
+#include "globvar.h"
 
-int16_t temp = 0;
+#define MAX_NUM_LEN 7
+
+// local function prototypes
+int decode_day(char *day);
+int encode_day(int day, char *daystr);
+int16_t str2uint(char *s);
+int uint2str(char *s, uint16_t d, int l);
+int float2str(char *s, float f, int d);
+int getdec(uint16_t val);
+
+
+// local functions implementation
 
 int decode_day(char *day)
 {
@@ -56,7 +68,6 @@ int16_t str2uint(char *s)
     return res;
 }
 
-#define MAX_NUM_LEN 7
 int uint2str(char *s, uint16_t d, int l)
 {
     char numbuf[MAX_NUM_LEN+1];
@@ -123,6 +134,9 @@ int getdec(uint16_t val)
     return -1;
 }
 
+
+// interface implementation
+
 int use_command(char *cmdbuf)
 {
     int cmdlen = strlen(cmdbuf);
@@ -181,15 +195,30 @@ int use_command(char *cmdbuf)
     if ((cmdlen==2) && (strncmp(cmdbuf,"T?\0",3)==0))
     {
         char retstr[UART_TX_BUFLEN];
-        char *s = retstr;
-        int16_t t = temp;
-        strncpy(s,"\nT ",3); s+=3;
-        if (t<0) {*s++='-'; t=-t;}
-        s+=uint2str(s,t>>4,0);
-        *s++='.';
-        s+=uint2str(s,getdec(t),1);
-        strncpy(s,"C\n\r\0",4); //s+=4
-        uart_puts(retstr);
+        int i;
+        for (i=0;i<3;i++)
+        {
+            int16_t t = t_val[i];
+            uint16_t e = t_err[i];
+            char *s = retstr;
+            if (i==0) *s++='\n';
+            *s++='T';
+            s+=(uint2str(s,i+1,1)); *s++=' ';
+            if (e>0)
+            {
+                if (t<0) {*s++='-'; t=-t;}
+                s+=uint2str(s,t>>4,0);
+                *s++='.';
+                s+=uint2str(s,getdec(t),1);
+                *s++='C';
+            }
+            else
+            {
+                strncpy(s,"---",3); s+=3;
+            }
+            strncpy(s,"\n\r\0",3); //s+=3;
+            uart_puts(retstr);
+        }
         return 0;
     }
 

@@ -35,6 +35,7 @@
 #include "rtc.h"
 #include "ds18b20.h"
 #include "comm.h"
+#include "globvar.h"
 
 // board (leds)
 #define LED_INIT() {P1DIR|=0x41;P1OUT&=~0x41;}
@@ -73,11 +74,23 @@ int main(void)
 	while(1)
 	{
 	    int i;
+        for (i=0;i<3;i++) ds18d20_start_conversion(&s[i]); // start conversion
         __bis_SR_register(CPUOFF + GIE); // enter sleep mode (leave on rtc second event)
-        for (i=0;i<3;i++) ds18d20_start_conversion(&s[i]);
+        for (i=0;i<3;i++)
+        {
+            ds18b20_read_conversion(&s[i]); // read data from sensor
+            if (s[i].valid)
+            {
+                t_val[i]=s[i].data.temp; // save temperature value
+                t_err[i]=0; // clear error counter
+            }
+            else
+            {
+                t_err[i]++; // increase error counter
+                if (t_err[i]==0) t_err[i]=0xFFFF; // handle overflow
+            }
+        }
         __bis_SR_register(CPUOFF + GIE); // enter sleep mode (leave on rtc second event)
-        for (i=0;i<3;i++) ds18b20_read_conversion(&s[i]);
-        if (s[0].valid) temp=s[0].data.temp;
 	}
 
 	return -1;

@@ -37,6 +37,7 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="ds18b20.h" />
+		<Unit filename="globvar.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
