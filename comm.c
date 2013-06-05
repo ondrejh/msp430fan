@@ -204,7 +204,7 @@ int use_command(char *cmdbuf)
             if (i==0) *s++='\n';
             *s++='T';
             s+=(uint2str(s,i+1,1)); *s++=' ';
-            if (e>0)
+            if (e==0)
             {
                 if (t<0) {*s++='-'; t=-t;}
                 s+=uint2str(s,t>>4,0);

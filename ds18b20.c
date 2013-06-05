@@ -106,7 +106,7 @@ int ds18b20_read_bit(ds18b20_sensor_t *s)
     *(s->port_dir) &= ~(s->port_mask);
     // test input
     //if ((P1IN&0x80)!=0) retval = 1;
-    if ((*(s->port_in)&0x80)!=0) retval = 1;
+    if ((*(s->port_in)&(s->port_mask))!=0) retval = 1;
     // wait 60 us
     wait(60);
     // return
