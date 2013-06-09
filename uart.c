@@ -140,10 +140,7 @@ int uart_puts(char *s)
 	return ptr;
 }
 
-// interrupt handlers
-
-
-
+// command parsing
 void use_rx_buffer(int bufptr)
 {
     char cmdbuf[UART_RX_BUFLEN];
@@ -161,6 +158,8 @@ void use_rx_buffer(int bufptr)
     // test commands
     use_command(cmdbuf);
 }
+
+// interrupt handlers
 
 // uart RX interrupt handler
 #pragma vector=USCIAB0RX_VECTOR

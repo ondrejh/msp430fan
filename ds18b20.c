@@ -165,7 +165,11 @@ void ds18b20_read_conversion(ds18b20_sensor_t *s)
     ds18b20_write_byte(s,0xCC);
     ds18b20_write_byte(s,0xBE);
     int i;
-    for (i=0;i<10;i++) s->data.d[i]=ds18b20_read_byte(s);
-    if (crc8(s->data.d,8)==s->data.d[8]) s->valid = true;
+    bool allzeros = true;
+    for (i=0;i<10;i++) {s->data.d[i]=ds18b20_read_byte(s); if (s->data.d[i]!=0) allzeros=false;}
+    if ((!allzeros)&&(crc8(s->data.d,8)==s->data.d[8]))
+    {
+        s->valid = true;
+    }
     else s->valid = false;
 }

@@ -7,3 +7,4 @@
 *.map
 msp430sht.txt
 msp430solar.txt
+crc/*.exe

@@ -79,16 +79,12 @@ int main(void)
         for (i=0;i<3;i++)
         {
             ds18b20_read_conversion(&s[i]); // read data from sensor
-            if (s[i].valid)
+            if (s[i].valid==true)
             {
                 t_val[i]=s[i].data.temp; // save temperature value
                 t_err[i]=0; // clear error counter
             }
-            else
-            {
-                t_err[i]++; // increase error counter
-                if (t_err[i]==0) t_err[i]=0xFFFF; // handle overflow
-            }
+            else if (t_err[i]!=0xFFFF) t_err[i]++; // increase error counter
         }
         __bis_SR_register(CPUOFF + GIE); // enter sleep mode (leave on rtc second event)
 	}
