@@ -11,6 +11,7 @@
 #include "uart.h"
 #include "rtc.h"
 #include "globvar.h"
+#include "pout.h"
 
 #define MAX_NUM_LEN 7
 
@@ -219,6 +220,22 @@ int use_command(char *cmdbuf)
             strncpy(s,"\n\r\0",3); //s+=3;
             uart_puts(retstr);
         }
+        return 0;
+    }
+
+    // print output status: "P?"
+    if ((cmdlen==2) && (strncmp(cmdbuf,"P?\0",3)==0))
+    {
+        if (pout) uart_puts("P ON\n\r");
+        else uart_puts("P OFF\n\r");
+        return 0;
+    }
+
+    // set output status: "P ON" and "P OFF"
+    if (((cmdlen==4) || (cmdlen==5)) && (strncmp(cmdbuf,"P O",3)==0))
+    {
+        pout_set(cmdbuf[3]=='N');
+        uart_puts("\nOK\n\r");
         return 0;
     }
 

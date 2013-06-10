@@ -41,6 +41,10 @@
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="pout.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="pout.h" />
 		<Unit filename="remflash.sh" />
 		<Unit filename="rtc.c">
 			<Option compilerVar="CC" />

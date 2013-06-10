@@ -36,6 +36,7 @@
 #include "ds18b20.h"
 #include "comm.h"
 #include "globvar.h"
+#include "pout.h"
 
 // board (leds)
 #define LED_INIT() {P1DIR|=0x41;P1OUT&=~0x41;}
@@ -70,6 +71,8 @@ int main(void)
 	ds18b20_init(&s[0],&P2OUT,&P2IN,&P2REN,&P2DIR,0); // sensor 0: PORT2 pin 0
 	ds18b20_init(&s[1],&P2OUT,&P2IN,&P2REN,&P2DIR,1); // sensor 1: PORT2 pin 1
 	ds18b20_init(&s[2],&P2OUT,&P2IN,&P2REN,&P2DIR,2); // sensor 2: PORT2 pin 2
+
+    pout_init(); // init power output (pump switch)
 
 	while(1)
 	{
