@@ -16,6 +16,8 @@
 //         /|\|                 |
 //          | |           P1.1,2|--> UART (debug output 9.6kBaud)
 //          --|RST              |
+//            |             XTAL|<---> 32.768kHz quartz (realtime clock)
+//            |                 |
 //            |             P1.0|--> RED LED (communication - active high)
 //            |             P1.6|--> GREEN LED (output on - active high)
 //            |                 |
@@ -24,6 +26,10 @@
 //            |             P2.0|<---> Temp. sensor DS18B20 (panel low.s.)
 //            |             P2.1|<---> Temp. sensor DS18B20 (panel high.s.)
 //            |             P2.2|<---> Temp. sensor DS18B20 (pool)
+//            |                 |
+//            |             P2.3|--
+//            |             P2.4|--|-> Tyristor output (tripled for more power)
+//            |             P2.5|--
 //            |                 |
 //
 //******************************************************************************
@@ -72,6 +78,7 @@ int main(void)
 	ds18b20_init(&s[1],&P2OUT,&P2IN,&P2REN,&P2DIR,1); // sensor 1: PORT2 pin 1
 	ds18b20_init(&s[2],&P2OUT,&P2IN,&P2REN,&P2DIR,2); // sensor 2: PORT2 pin 2
 
+    prog_init();
     pout_init(); // init power output (pump switch)
 
 	while(1)

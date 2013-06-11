@@ -7,4 +7,6 @@ void pout_init(void);
 // set power output status (on/off)
 void pout_set(bool state);
 
+void prog_init(void);
+
 #endif

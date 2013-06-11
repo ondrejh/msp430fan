@@ -6,8 +6,14 @@ Home automation swimming pool solar panel pump switch using msp430 launchpad.
 Done:
 
 	- cloned and cleared one of mine older projects - used as the base for this one
+	- sensors connected (3 x ds18b20)
+	- rtc time module
+	- setting and printing time by uart
+	- printing temperature
+	- setting and printing output status (on/off/auto)
+	- setting and printing time program
 
 Todo:
 
-    - time set via uart and time print
-	- connect some digital temperature sensors (ds18b20)
+    - use time program for auto output
+    - use temperature values for auto output

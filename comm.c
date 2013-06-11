@@ -226,17 +226,95 @@ int use_command(char *cmdbuf)
     // print output status: "P?"
     if ((cmdlen==2) && (strncmp(cmdbuf,"P?\0",3)==0))
     {
-        if (pout) uart_puts("P ON\n\r");
-        else uart_puts("P OFF\n\r");
+        uart_puts("\nP ");
+        if (pauto) uart_puts("AUTO ");
+        if (pout) uart_puts("ON\n\r");
+        else uart_puts("OFF\n\r");
         return 0;
     }
 
-    // set output status: "P ON" and "P OFF"
-    if (((cmdlen==4) || (cmdlen==5)) && (strncmp(cmdbuf,"P O",3)==0))
+    // set output status: "P ON","P OFF" or "P AUTO"
+    if (((cmdlen>=4) || (cmdlen<=6)) && (strncmp(cmdbuf,"P ",2)==0))
     {
-        pout_set(cmdbuf[3]=='N');
+        if (strncmp(&cmdbuf[2],"ON\0",3)==0)
+        {
+            pout_set(true);
+            pauto=false;
+        }
+        else if (strncmp(&cmdbuf[2],"OFF\0",4)==0)
+        {
+            pout_set(false);
+            pauto=false;
+        }
+        else if (strncmp(&cmdbuf[2],"AUTO\0",5)==0)
+        {
+            pout_set(false);
+            pauto=true;
+        }
+        else return -1;
         uart_puts("\nOK\n\r");
         return 0;
+    }
+
+    // get program line: "pX?"
+    if ((cmdlen==3) && (cmdbuf[0]=='p') && (cmdbuf[2]=='?'))
+    {
+        int i = cmdbuf[1]-'0';
+        if ((i<0)||(1>7)) return -1;
+        char retstr[UART_TX_BUFLEN];
+        char *s = retstr;
+        *s++='\n'; *s++='p'; *s++='0'+i; *s++=' ';
+        if (prog[i].status==0)
+        {
+            strncpy(s,"EMPTY\n\r\0",8);
+            s+=8;
+        }
+        else
+        {
+            int b;
+            for (b=0x01;b<0x80;b<<=1) *s++=(((prog[i].daymask&b)==0)?'0':'1');
+            *s++=' ';
+            s+=uint2str(s,prog[i].starttime>>8,2); *s++=':'; s+=uint2str(s,prog[i].starttime&0xFF,2);
+            *s++=' ';
+            s+=uint2str(s,prog[i].stoptime>>8,2); *s++=':'; s+=uint2str(s,prog[i].stoptime&0xFF,2);
+            strncpy(s,"\n\r\0",3); //s+=3;
+        }
+        uart_puts(retstr);
+    }
+
+    // clear programm line: "pX CLEAR"
+    if ((cmdlen==8) && (cmdbuf[0]=='p') && (strncmp(&cmdbuf[3],"CLEAR\0",6)==0))
+    {
+        int i = cmdbuf[1]-'0';
+        if ((i<0)||(i>7)) return -1;
+        prog[i].status=0;
+        uart_puts("\nOK\n\r");
+    }
+
+    // set program line: "pX YYYYYYY HH:MM HH:MM"
+    if ((cmdlen==22) && (cmdbuf[0]=='p'))
+    {
+        int i = cmdbuf[1]-'0';
+        if ((i<0)||(i>7)) return -1;
+        uint8_t daymask = 0;
+        int b;
+        char *s = &cmdbuf[3];
+        for (b=0x01;b<0x80;b<<=1) if (*s++=='1') daymask|=b;
+        uint16_t bh,bm,eh,em; // begin hour/minute, end hour/minute
+        bh=str2uint(&cmdbuf[11]);
+        if ((bh<0)||(bh>23)) return -2;
+        bm=str2uint(&cmdbuf[14]);
+        if ((bm<0)||(bm>59)) return -2;
+        eh=str2uint(&cmdbuf[17]);
+        if ((eh<0)||(eh>23)) return -2;
+        em=str2uint(&cmdbuf[20]);
+        if ((em<0)||(em>59)) return -2;
+        prog[i].status=0;
+        prog[i].daymask=daymask;
+        prog[i].starttime=(bh<<8)|bm;
+        prog[i].stoptime=(eh<<8)|em;
+        prog[i].status=1;
+        uart_puts("\nOK\n\r");
     }
 
     return -1;

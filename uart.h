@@ -20,8 +20,8 @@
 // uart buffer length (mask preferred)
 #define UART_TX_BUFLEN 64
 #define UART_TX_BUFMASK 0x3F
-#define UART_RX_BUFLEN 16
-#define UART_RX_BUFMASK 0x0F
+#define UART_RX_BUFLEN 32
+#define UART_RX_BUFMASK 0x1F
 
 char h2c(unsigned int h); // hex to char
 int8_t c2h(char c); // char to hex
