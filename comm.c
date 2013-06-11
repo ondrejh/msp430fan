@@ -237,20 +237,11 @@ int use_command(char *cmdbuf)
     if (((cmdlen>=4) || (cmdlen<=6)) && (strncmp(cmdbuf,"P ",2)==0))
     {
         if (strncmp(&cmdbuf[2],"ON\0",3)==0)
-        {
-            pout_set(true);
-            pauto=false;
-        }
+            pout_set(ON);
         else if (strncmp(&cmdbuf[2],"OFF\0",4)==0)
-        {
-            pout_set(false);
-            pauto=false;
-        }
+            pout_set(OFF);
         else if (strncmp(&cmdbuf[2],"AUTO\0",5)==0)
-        {
-            pout_set(false);
-            pauto=true;
-        }
+            pout_set(AUTO);
         else return -1;
         uart_puts("\nOK\n\r");
         return 0;

@@ -11,6 +11,9 @@
 #define PUMP_LED_POUT P1OUT
 #define PUMP_LED_PDIR P1DIR
 #define PUMP_LED_MASK (1<<6) // P1.6
+#define AUTO_LED_POUT P1OUT
+#define AUTO_LED_PDIR P1DIR
+#define AUTO_LED_MASK (1<<7) // P1.7
 
 // initialize power ouput
 void pout_init(void)
@@ -18,28 +21,43 @@ void pout_init(void)
     // power output pins P2 3..5
     PUMP_POUT&=~PUMP_MASK;
     PUMP_PDIR|= PUMP_MASK;
-    // green led
+    // pump signal led
     PUMP_LED_POUT&=~PUMP_LED_MASK;
     PUMP_LED_PDIR|= PUMP_LED_MASK;
+    // auto signal led
+    AUTO_LED_POUT|= AUTO_LED_MASK;
+    AUTO_LED_PDIR|= AUTO_LED_MASK;
     // set variables
     pout=false;
     pauto=true;
 }
 
 // set power output status (on/off)
-void pout_set(bool state)
+void pout_set(t_setstatus state)
 {
-    if (state)
+    switch (state)
     {
-        PUMP_POUT     |= PUMP_MASK; // power outputs on
-        PUMP_LED_POUT |= PUMP_LED_MASK; // green led on
-        pout=true; // set power output global variable
-    }
-    else
-    {
-        PUMP_POUT     &= ~PUMP_MASK; // power output off
-        PUMP_LED_POUT &= ~PUMP_LED_MASK; // green led off
-        pout=false; // set power output global variable
+        case ON:
+            PUMP_POUT     |= PUMP_MASK; // power outputs on
+            PUMP_LED_POUT |= PUMP_LED_MASK; // power signal led on
+            pout=true; // set power output global variable
+            AUTO_LED_POUT &=~AUTO_LED_MASK; // auto signal led off
+            pauto=false; // set auto signal off
+            break;
+        case OFF:
+            PUMP_POUT     &= ~PUMP_MASK; // power output off
+            PUMP_LED_POUT &= ~PUMP_LED_MASK; // power signal led off
+            pout=false; // set power output global variable
+            AUTO_LED_POUT &= ~AUTO_LED_MASK; // auto signal led off
+            pauto=false;
+            break;
+        case AUTO:
+            PUMP_POUT     &= ~PUMP_MASK; // power outputs off
+            PUMP_LED_POUT &= ~PUMP_LED_MASK; // power signal led off
+            pout=false; // set power output global variable
+            AUTO_LED_POUT |=  AUTO_LED_MASK; // auto signal led om
+            pauto=true;
+            break;
     }
 }
 
