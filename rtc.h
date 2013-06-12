@@ -18,6 +18,8 @@ typedef struct
 
 bool timeset; // set true if time was set
 
+bool minute_event; // set true every minute
+
 void rtc_set_time(tstruct *tset); // time synchronization
 bool rtc_get_time(tstruct *tget); // get time function
 

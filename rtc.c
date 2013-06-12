@@ -47,6 +47,7 @@ void inc_one_second(tstruct *tbefore, tstruct *tafter)
     tafter->second++; // second
     if (tafter->second>=60)
     {
+        minute_event=true;
         tafter->second=0;
         tafter->minute++; // minute
         if (tafter->minute>=60)

@@ -10,5 +10,6 @@ typedef enum {ON, OFF, AUTO,} t_setstatus;
 void pout_set(t_setstatus state);
 
 void prog_init(void);
+bool prog_test(tstruct t);
 
 #endif

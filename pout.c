@@ -2,6 +2,7 @@
 #include <stdbool.h>
 
 #include "globvar.h"
+#include "rtc.h"
 #include "pout.h"
 
 #define PUMP_POUT P2OUT
@@ -14,6 +15,11 @@
 #define AUTO_LED_POUT P1OUT
 #define AUTO_LED_PDIR P1DIR
 #define AUTO_LED_MASK (1<<7) // P1.7
+
+#define SET_AUTO_ON() {AUTO_LED_POUT|=AUTO_LED_MASK;pauto=true;}
+#define SET_AUTO_OFF() {AUTO_LED_POUT&=~AUTO_LED_MASK;pauto=false;}
+#define SET_OUTPUT_ON() {PUMP_POUT|=PUMP_MASK;PUMP_LED_POUT|=PUMP_LED_MASK;pout=true;}
+#define SET_OUTPUT_OFF() {PUMP_POUT&=~PUMP_MASK;PUMP_LED_POUT&=~PUMP_LED_MASK;pout=false;}
 
 // initialize power ouput
 void pout_init(void)
@@ -38,25 +44,21 @@ void pout_set(t_setstatus state)
     switch (state)
     {
         case ON:
-            PUMP_POUT     |= PUMP_MASK; // power outputs on
-            PUMP_LED_POUT |= PUMP_LED_MASK; // power signal led on
-            pout=true; // set power output global variable
-            AUTO_LED_POUT &=~AUTO_LED_MASK; // auto signal led off
-            pauto=false; // set auto signal off
+            SET_OUTPUT_ON(); // power output on
+            SET_AUTO_OFF(); // set auto signal off
             break;
         case OFF:
-            PUMP_POUT     &= ~PUMP_MASK; // power output off
-            PUMP_LED_POUT &= ~PUMP_LED_MASK; // power signal led off
-            pout=false; // set power output global variable
-            AUTO_LED_POUT &= ~AUTO_LED_MASK; // auto signal led off
-            pauto=false;
+            SET_OUTPUT_OFF(); // power output off
+            SET_AUTO_OFF(); // auto signal led off
             break;
         case AUTO:
-            PUMP_POUT     &= ~PUMP_MASK; // power outputs off
-            PUMP_LED_POUT &= ~PUMP_LED_MASK; // power signal led off
-            pout=false; // set power output global variable
-            AUTO_LED_POUT |=  AUTO_LED_MASK; // auto signal led om
-            pauto=true;
+            SET_AUTO_ON(); // auto signal led on
+            {
+                tstruct t;
+                rtc_get_time(&t);
+                if (prog_test(t)) SET_OUTPUT_ON() // power output on
+                else SET_OUTPUT_OFF(); // power output off
+            }
             break;
     }
 }
@@ -76,4 +78,23 @@ void prog_init(void)
     prog[1].starttime=(16/*h*/<<8)|(00/*min*/);
     prog[1].stoptime=(18/*h*/<<8)|(00/*min*/);
     prog[1].status=1;
+}
+
+// test program
+bool prog_test(tstruct t)
+{
+    uint8_t daymask = (1<<t.dayow);
+    uint16_t time = (t.hour<<8) | t.minute;
+
+    int i;
+
+    for (i=0;i<PROG_LENGTH;i++)
+    {
+        if ((prog[i].status!=0) &&
+            ((daymask&prog[i].daymask)!=0) &&
+            (time>=prog[i].starttime) &&
+            (time<=prog[i].stoptime)) return true;
+    }
+
+    return false;
 }

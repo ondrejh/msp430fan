@@ -18,10 +18,13 @@
 //          --|RST              |
 //            |             XTAL|<---> 32.768kHz quartz (realtime clock)
 //            |                 |
-//            |             P1.0|--> RED LED (communication - active high)
-//            |             P1.6|--> GREEN LED (output on - active high)
+//            |             P1.0|--> COMMUNICATION LED
+//            |             P1.6|--> POWER OUTPUT LED
+//            |             P1.7|--> AUTO MODE LED
 //            |                 |
-//            |             P1.3|----> BUTTON
+//            |             P1.3|<---- BUTTON
+//            |                 |
+//            |             P1.4|<---- DCF77
 //            |                 |
 //            |             P2.0|<---> Temp. sensor DS18B20 (panel low.s.)
 //            |             P2.1|<---> Temp. sensor DS18B20 (panel high.s.)
@@ -97,6 +100,12 @@ int main(void)
             else if (t_err[i]!=0xFFFF) t_err[i]++; // increase error counter
         }
         __bis_SR_register(CPUOFF + GIE); // enter sleep mode (leave on rtc second event)
+        if (minute_event)
+        {
+            minute_event=false;
+            if (pauto) pout_set(AUTO);
+            __bis_SR_register(CPUOFF + GIE); // enter sleep mode (leave on rtc second event)
+        }
 	}
 
 	return -1;
