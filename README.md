@@ -12,8 +12,10 @@ Done:
 	- printing temperature
 	- setting and printing output status (on/off/auto)
 	- setting and printing time program
+	- output in auto status reacts to time program
 
 Todo:
 
-    - use time program for auto output
     - use temperature values for auto output
+    - use button input to change output status (on/off/auto)
+    - connect dcf77

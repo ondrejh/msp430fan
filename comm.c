@@ -306,6 +306,7 @@ int use_command(char *cmdbuf)
         prog[i].stoptime=(eh<<8)|em;
         prog[i].status=1;
         uart_puts("\nOK\n\r");
+        if (pauto) pout_set(AUTO);
     }
 
     return -1;

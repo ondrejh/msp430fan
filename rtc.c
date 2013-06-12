@@ -97,9 +97,9 @@ void rtc_timer_init(void)
 	#ifdef RTC_SAMPLING_FREQV
 	CCR0 = (32768/8/RTC_SAMPLING_FREQV)-1;
 	#else
-	//CCR0 = 512;	  // f = 32768 / 8(ID_3) / 512(CCR0) = 8Hz
-	CCR0 = 1024;	  // f = 32768 / 8(ID_3) / 1024(CCR0) = 4Hz
-	//CCR0 = 2048;	  // f = 32768 / 8(ID_3) / 2048(CCR0) = 2Hz
+	//CCR0 = 511;	  // f = 32768 / 8(ID_3) / 512(CCR0+1) = 8Hz
+	CCR0 = 1023;	  // f = 32768 / 8(ID_3) / 1024(CCR0+1) = 4Hz
+	//CCR0 = 2047;	  // f = 32768 / 8(ID_3) / 2048(CCR0+1) = 2Hz
 	#endif
 	TACTL = TASSEL_1 + ID_3 + MC_1; // ACLK, /8, upmode
 }
