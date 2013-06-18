@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 // rtc sampling frequency (less - less interrupts, more - lower delay)
-#define RTC_SAMPLING_FREQV 2 // should be power of 2 (2,4,8 tested)
+#define RTC_SAMPLING_FREQV 4 // should be power of 2 (2,4,8 tested)
 
 // time structure
 typedef struct

@@ -89,17 +89,19 @@ int main(void)
 	    int i;
         for (i=0;i<3;i++) ds18d20_start_conversion(&s[i]); // start conversion
         __bis_SR_register(CPUOFF + GIE); // enter sleep mode (leave on rtc second event)
+        LED_GREEN_SWAP();
         for (i=0;i<3;i++)
         {
             ds18b20_read_conversion(&s[i]); // read data from sensor
-            if (s[i].valid==true)
-            {
+            /*if (s[i].valid==true)
+            {*/
                 t_val[i]=s[i].data.temp; // save temperature value
                 t_err[i]=0; // clear error counter
-            }
-            else if (t_err[i]!=0xFFFF) t_err[i]++; // increase error counter
+            /*}
+            else if (t_err[i]!=0xFFFF) t_err[i]++; // increase error counter*/
         }
         __bis_SR_register(CPUOFF + GIE); // enter sleep mode (leave on rtc second event)
+        LED_GREEN_SWAP();
         if (minute_event)
         {
             minute_event=false;
