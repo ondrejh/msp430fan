@@ -74,12 +74,12 @@ void prog_init(void)
     for (i=0;i<PROG_LENGTH;i++) prog[i].status=0; // reset all prog lines
 
     prog[0].daymask=(1<<0)|(1<<1)|(1<<2)|(1<<3)|(1<<4); // mon - fri
-    prog[0].starttime=(16/*h*/<<8)|(35/*min*/);
+    prog[0].starttime=(10/*h*/<<8)|(35/*min*/);
     prog[0].stoptime=(18/*h*/<<8)|(35/*min*/);
     prog[0].status=1;
 
     prog[1].daymask=(1<<5)|(1<<6); // sat - sun
-    prog[1].starttime=(16/*h*/<<8)|(00/*min*/);
+    prog[1].starttime=(10/*h*/<<8)|(00/*min*/);
     prog[1].stoptime=(18/*h*/<<8)|(00/*min*/);
     prog[1].status=1;
 }
