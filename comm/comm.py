@@ -1,7 +1,10 @@
+#!/usr/bin/env python3
+
 from serial import Serial
 from time import localtime
 
-portname = 'COM7'
+#portname = 'COM7'
+portname = '/dev/ttyACM0'
 timeout = 0.1
 
 def smalltalk(saywhat,portname=portname,timeout=timeout):
