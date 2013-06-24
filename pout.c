@@ -21,6 +21,10 @@
 #define SET_OUTPUT_ON() {PUMP_POUT|=PUMP_MASK;PUMP_LED_POUT|=PUMP_LED_MASK;pout=true;}
 #define SET_OUTPUT_OFF() {PUMP_POUT&=~PUMP_MASK;PUMP_LED_POUT&=~PUMP_LED_MASK;pout=false;}
 
+#define TEMP_DIFF_ON (5<<4)
+#define TEMP_DIFF_OFF (3<<4)
+#define TEMP_MIN_ON (10<<4)
+
 // initialize power ouput
 void pout_init(void)
 {
@@ -56,7 +60,7 @@ void pout_set(t_setstatus state)
             {
                 tstruct t;
                 rtc_get_time(&t);
-                if (prog_test(t)) SET_OUTPUT_ON() // power output on
+                if ((prog_test(t)) || (temp_test(t_val[0],t_val[1]))) SET_OUTPUT_ON() // power output on
                 else SET_OUTPUT_OFF(); // power output off
             }
             break;
@@ -97,4 +101,17 @@ bool prog_test(tstruct t)
     }
 
     return false;
+}
+
+// test temperature
+bool temp_test(int16_t tpool, int16_t tpanel)
+{
+    if (tpanel>TEMP_MIN_ON)
+    {
+        static bool temp_pump_on = false;
+        if (temp_pump_on && (tpanel<tpool+TEMP_DIFF_OFF)) temp_pump_on=false;
+        if ((!temp_pump_on) && (tpanel>tpool+TEMP_DIFF_ON)) temp_pump_on=true;
+        return temp_pump_on;
+    }
+    else return false;
 }

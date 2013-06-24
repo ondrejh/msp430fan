@@ -12,7 +12,7 @@
 #   there is the "./flash.sh" script in this dir. too
 #   flashing launchpad works without root privilegues (on rpi)
 
-scp msp430solar.hex pi@10.0.0.177:/home/pi/solar/
+scp msp430solar.hex pi@bazen:/home/pi/solar/
 ssh pi@10.0.0.177 "cd /home/pi/solar; ./flash.sh"
 
 #flash.sh script content: mspdebug rf2500 "prog msp430solar.hex"

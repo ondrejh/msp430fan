@@ -11,5 +11,6 @@ void pout_set(t_setstatus state);
 
 void prog_init(void);
 bool prog_test(tstruct t);
+bool temp_test(int16_t tpool, int16_t tpanel);
 
 #endif
