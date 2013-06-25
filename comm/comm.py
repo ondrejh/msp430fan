@@ -3,8 +3,8 @@
 from serial import Serial
 from time import localtime
 
-#portname = 'COM7'
-portname = '/dev/ttyACM0'
+portname = 'COM7'
+#portname = '/dev/ttyACM0'
 timeout = 0.1
 
 def smalltalk(saywhat,portname=portname,timeout=timeout):
@@ -66,11 +66,11 @@ def read_time():
 
 def set_time(wday,hour,mins,sec):
     ''' function sets the device time
-    return OK if success or None if fails '''
+    return OK if success or ERROR if fails '''
     s = 't {:3s} {:02d}:{:02d}:{:02d}'.format(wday2str(wday),hour,mins,sec)
     answ = decompose(smalltalk(s))
     if len(answ)<2:
-        return None
+        return 'ERROR'
     else:
         return answ[1]
 
@@ -91,10 +91,13 @@ def set_local_time():
     tSys = localtime()
     return set_time(tSys.tm_wday,tSys.tm_hour,tSys.tm_min,tSys.tm_sec)
 
-''' test if time set and set it if not '''
-td = test_time()
-if abs(td)>5: #if device time differs from system time
-    print(set_local_time()) #setup device time
-    print('device time is correct now')
-else:
-    print('device time is {}s off'.format(td))
+
+if __name__ == '__main__':
+
+    ''' test if time set and set it if not '''
+    td = test_time()
+    if abs(td)>5: #if device time differs from system time
+        print(set_local_time()) #setup device time
+        print('device time is correct now')
+    else:
+        print('device time is {}s off'.format(td))
