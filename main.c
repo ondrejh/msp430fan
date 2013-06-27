@@ -56,6 +56,9 @@
 #define LED_GREEN_OFF() {P1OUT&=~0x40;}
 #define LED_GREEN_SWAP() {P1OUT^=0x40;}
 
+#define BUTTON BIT3
+#define DCF77 BIT4
+
 
 // leds and dco init
 void board_init(void)
@@ -63,6 +66,9 @@ void board_init(void)
 	// oscillator
 	BCSCTL1 = CALBC1_1MHZ;		// Set DCO
 	DCOCTL = CALDCO_1MHZ;
+
+    // button P1.3 & dcf77 P1.4
+    P1DIR&=~(BUTTON|DCF77); P1IE|=(BUTTON|DCF77); P1IES|=(BUTTON|DCF77); P1IFG&=~(BUTTON|DCF77); P1REN|=(BUTTON|DCF77);
 
 	LED_INIT(); // leds
 }
@@ -109,4 +115,146 @@ int main(void)
 	}
 
 	return -1;
+}
+
+typedef enum {LOW, HIGH, CLEAR} t_dcf77bit;
+
+void dcf77_synchro(t_dcf77bit dcf77bit)
+{
+    static int cnt=0;
+
+    if (dcf77bit==CLEAR)
+    {
+        cnt=0;
+    }
+    else
+    {
+        switch (cnt)
+        {
+            case 0:  break; // 1 allways
+            case 1:  break; // 1 civil warning bits
+            case 2:  break; // 1
+            case 3:  break; // 1
+            case 4:  break; // 1
+            case 5:  break; // 1
+            case 6:  break; // 1
+            case 7:  break; // 1
+            case 8:  break; // 1
+            case 9:  break; // 1
+            case 10: break; // 0
+            case 11: break; // 0
+            case 12: break; // 0
+            case 13: break; // 0
+            case 14: break; // 0
+            case 15: break; // reserve antena
+            case 16: break; //
+            case 17: break; //
+            case 18: break; //
+            case 19: break; //
+            case 20: break; //
+            case 21: break; //
+            case 22: break; //
+            case 23: break; //
+            case 24: break; //
+            case 25: break; //
+            case 26: break; //
+            case 27: break; //
+            case 28: break; //
+            case 29: break; //
+            case 30: break; //
+            case 31: break; //
+            case 32: break; //
+            case 33: break; //
+            case 34: break; //
+            case 35: break; //
+            case 36: break; //
+            case 37: break; //
+            case 38: break; //
+            case 39: break; //
+            case 40: break; //
+            case 41: break; //
+            case 42: break; //
+            case 43: break; //
+            case 44: break; //
+            case 45: break; //
+            case 46: break; //
+            case 47: break; //
+            case 48: break; //
+            case 49: break; //
+            case 50: break; //
+            case 51: break; //
+            case 52: break; //
+            case 53: break; //
+            case 54: break; //
+            case 55: break; //
+            case 56: break; //
+            case 57: break; //
+            case 58: break; //
+            default: break;
+        }
+        cnt++;
+    }
+}
+
+// Port 1 interrupt service routine
+#pragma vector=PORT1_VECTOR
+__interrupt void Port_1(void)
+{
+    // button input
+    if (P1IFG&BUTTON)
+    {
+        static int status = 0;
+        P1IFG &= ~BUTTON; // P1.3 IFG cleared
+        switch (status)
+        {
+            case 0: pout_set(OFF); break;
+            case 1: pout_set(AUTO); break;
+            case 2: pout_set(ON); break;
+            case 3: pout_set(AUTO); break;
+        }
+        status = (status+1)&0x03;
+    }
+
+    // dcf77 input
+    if (P1IFG&DCF77)
+    {
+        static unsigned int rtc_last_ticks=0;
+        unsigned int now = rtc_ticks;
+        unsigned int diff = now-rtc_last_ticks;
+
+        if ((P1IES&DCF77)!=0)
+        {
+            if ((diff>3)&&(diff<10)) // log "0" detected
+            {
+
+            }
+            else if ((diff>10)&&(diff<16)) // log "1" detected
+            {
+
+            }
+            else // signal error (less than 4, more than 15 or 10 exactly)
+            {
+
+            }
+        }
+        else
+        {
+            if (diff<40) // signal error (too short pause)
+            {
+
+            }
+            else if (diff>100) // minute mark (probably
+            {
+
+            }
+        }
+
+        P1IES ^= DCF77; // swap
+    }
+    /*P1IES ^= BUTTON; // toggle the interrupt edge,
+    if (P1IES&BUTTON) pout_set(ON);
+    else pout_set(OFF);*/
+    // the interrupt vector will be called
+    // when P1.3 goes from HitoLow as well as
+    // LowtoHigh
 }

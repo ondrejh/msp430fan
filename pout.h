@@ -6,7 +6,7 @@
 void pout_init(void);
 
 // set power output status (on/off)
-typedef enum {ON, OFF, AUTO,} t_setstatus;
+typedef enum {ON, OFF, AUTO} t_setstatus;
 void pout_set(t_setstatus state);
 
 void prog_init(void);

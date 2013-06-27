@@ -36,6 +36,8 @@ bool treset = true; // reset timer flag
 
 bool timeset = false;
 
+unsigned int rtc_ticks = 0;
+
 /** local functions section **/
 
 // increase time by one second
@@ -110,6 +112,9 @@ void rtc_timer_init(void)
 #pragma vector=TIMER0_A0_VECTOR
 __interrupt void Timer_A (void)
 {
+    // timer ticks
+    rtc_ticks++;
+
     static uint16_t tdiv = 0;
     if (treset==false)
     {
