@@ -15,7 +15,8 @@ Done:
 	- output in auto status reacts to time program
 	- output in auto status should react to temperature difference
 	- output status can be changed by pressing the button
+    - connect dcf77
 
 Todo:
 
-    - connect dcf77
+    - keep setup in flash memory
