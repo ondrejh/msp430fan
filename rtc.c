@@ -80,6 +80,8 @@ void rtc_set_time(tstruct *tset)
     treset = true;
     // set time
     memcpy(&tbuff[tptr],tset,sizeof(tstruct));
+    // test minute event
+    if (tset->second==0) minute_event=true;
 }
 
 // get time function
@@ -128,8 +130,6 @@ __interrupt void Timer_A (void)
         {
             tdiv=0;
             RTC_LED_ON();
-            // continue with main after interrupt (as there was an second event)
-            __bic_SR_register_on_exit(CPUOFF); // Clear CPUOFF bit from 0(SR)
 
             if (timeset)
             {
@@ -137,6 +137,9 @@ __interrupt void Timer_A (void)
                 inc_one_second(&tbuff[tptr],&tbuff[nextptr]);
                 tptr=nextptr;
             }
+
+            // continue with main after interrupt (as there was an second event)
+            __bic_SR_register_on_exit(CPUOFF); // Clear CPUOFF bit from 0(SR)
         }
         else
         {
@@ -154,6 +157,4 @@ __interrupt void Timer_A (void)
 
         treset=false; // clear sync. flag
     }
-
-    //dcf77_strobe();
 }

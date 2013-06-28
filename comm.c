@@ -19,7 +19,7 @@
 int decode_day(char *day);
 int encode_day(int day, char *daystr);
 int16_t str2uint(char *s);
-int uint2str(char *s, uint16_t d, int l);
+//int uint2str(char *s, uint16_t d, int l);
 int float2str(char *s, float f, int d);
 int getdec(uint16_t val);
 

@@ -43,7 +43,7 @@
 #include "uart.h"
 #include "rtc.h"
 #include "ds18b20.h"
-#include "comm.h"
+//#include "comm.h"
 #include "globvar.h"
 #include "pout.h"
 
@@ -121,7 +121,28 @@ typedef enum {LOW, HIGH, CLEAR} t_dcf77bit;
 
 void dcf77_synchro(t_dcf77bit dcf77bit)
 {
-    static int cnt=0;
+    /* // bits debug output section
+    switch (dcf77bit)
+    {
+        case LOW:
+            uart_putc('0');
+            break;
+        case HIGH:
+            uart_putc('1');
+            break;
+        case CLEAR:
+            uart_putc('\n');
+            uart_putc('\r');
+            break;
+    }*/
+
+    static int cnt = 0;
+
+    static int dcf77_minute = 0;
+    static int dcf77_hour = 0;
+    static int dcf77_dayow = 0;
+    static bool dcf77_parity = false;
+    static bool dcf77_error = true;
 
     if (dcf77bit==CLEAR)
     {
@@ -131,7 +152,14 @@ void dcf77_synchro(t_dcf77bit dcf77bit)
     {
         switch (cnt)
         {
-            case 0:  break; // 1 allways
+            case 0:  //break; // 0 allways
+                dcf77_error=false;
+                if (dcf77bit==HIGH)
+                {
+                    dcf77_error=true;
+                    //uart_putc('X'); // error debug output line
+                }
+                break;
             case 1:  break; // 1 civil warning bits
             case 2:  break; // 1
             case 3:  break; // 1
@@ -147,49 +175,225 @@ void dcf77_synchro(t_dcf77bit dcf77bit)
             case 13: break; // 0
             case 14: break; // 0
             case 15: break; // reserve antena
-            case 16: break; //
-            case 17: break; //
-            case 18: break; //
-            case 19: break; //
-            case 20: break; //
-            case 21: break; //
-            case 22: break; //
-            case 23: break; //
-            case 24: break; //
-            case 25: break; //
-            case 26: break; //
-            case 27: break; //
-            case 28: break; //
-            case 29: break; //
-            case 30: break; //
-            case 31: break; //
-            case 32: break; //
-            case 33: break; //
-            case 34: break; //
-            case 35: break; //
-            case 36: break; //
-            case 37: break; //
-            case 38: break; //
-            case 39: break; //
-            case 40: break; //
-            case 41: break; //
-            case 42: break; //
-            case 43: break; //
-            case 44: break; //
-            case 45: break; //
-            case 46: break; //
-            case 47: break; //
-            case 48: break; //
-            case 49: break; //
-            case 50: break; //
-            case 51: break; //
-            case 52: break; //
-            case 53: break; //
-            case 54: break; //
-            case 55: break; //
-            case 56: break; //
-            case 57: break; //
-            case 58: break; //
+            case 16: break; // summer time
+            case 17: break; // CEST
+            case 18: break; // CET
+            case 19: break; // leap second
+            case 20: //break; // 1 allways
+                if (dcf77bit==LOW)
+                {
+                    dcf77_error=true;
+                    //uart_putc('X'); // error debug output line
+                }
+                break;
+            case 21: //break; // 1 minutes
+                dcf77_minute = 0;
+                dcf77_parity = false;
+                if (dcf77bit==HIGH)
+                {
+                    dcf77_minute += 1;
+                    dcf77_parity = !dcf77_parity;
+                }
+                break;
+            case 22: //break; // 2
+                if (dcf77bit==HIGH)
+                {
+                    dcf77_minute += 2;
+                    dcf77_parity = !dcf77_parity;
+                }
+                break;
+            case 23: //break; // 4
+                if (dcf77bit==HIGH)
+                {
+                    dcf77_minute += 4;
+                    dcf77_parity = !dcf77_parity;
+                }
+                break;
+            case 24: //break; // 8
+                if (dcf77bit==HIGH)
+                {
+                    dcf77_minute += 8;
+                    dcf77_parity = !dcf77_parity;
+                }
+                break;
+            case 25: //break; // 10
+                if (dcf77bit==HIGH)
+                {
+                    dcf77_minute += 10;
+                    dcf77_parity = !dcf77_parity;
+                }
+                break;
+            case 26: //break; // 20
+                if (dcf77bit==HIGH)
+                {
+                    dcf77_minute += 20;
+                    dcf77_parity = !dcf77_parity;
+                }
+                break;
+            case 27: //break; // 40
+                if (dcf77bit==HIGH)
+                {
+                    dcf77_minute += 40;
+                    dcf77_parity = !dcf77_parity;
+                }
+                break;
+            case 28: //break; // even parity over minute bits 21 - 28
+                if (((dcf77bit==HIGH) && (!dcf77_parity)) ||
+                    ((dcf77bit==LOW) && (dcf77_parity)))
+                {
+                    dcf77_error=true;
+                    //uart_putc('X'); // error debug output line
+                }
+                break;
+            case 29: //break; // 1 hours
+                dcf77_hour = 0;
+                dcf77_parity = false;
+                if (dcf77bit==HIGH)
+                {
+                    dcf77_hour += 1;
+                    dcf77_parity = !dcf77_parity;
+                }
+                break;
+            case 30: //break; // 2
+                if (dcf77bit==HIGH)
+                {
+                    dcf77_hour += 2;
+                    dcf77_parity = !dcf77_parity;
+                }
+                break;
+            case 31: //break; // 4
+                if (dcf77bit==HIGH)
+                {
+                    dcf77_hour += 4;
+                    dcf77_parity = !dcf77_parity;
+                }
+                break;
+            case 32: //break; // 8
+                if (dcf77bit==HIGH)
+                {
+                    dcf77_hour += 8;
+                    dcf77_parity = !dcf77_parity;
+                }
+                break;
+            case 33: //break; // 10
+                if (dcf77bit==HIGH)
+                {
+                    dcf77_hour += 10;
+                    dcf77_parity = !dcf77_parity;
+                }
+                break;
+            case 34: //break; // 20
+                if (dcf77bit==HIGH)
+                {
+                    dcf77_hour += 20;
+                    dcf77_parity = !dcf77_parity;
+                }
+                break;
+            case 35: //break; // even parity over hour bits 29 - 35
+                if (((dcf77bit==HIGH) && (!dcf77_parity)) ||
+                    ((dcf77bit==LOW) && (dcf77_parity)))
+                {
+                    dcf77_error=true;
+                    //uart_putc('X'); // error debug output line
+                }
+                break;
+            case 36: //break; // 1 day of month
+                dcf77_parity = false;
+                if (dcf77bit==HIGH) dcf77_parity = !dcf77_parity;
+                break;
+            case 37: //break; // 2
+                if (dcf77bit==HIGH) dcf77_parity = !dcf77_parity;
+                break;
+            case 38: //break; // 4
+                if (dcf77bit==HIGH) dcf77_parity = !dcf77_parity;
+                break;
+            case 39: //break; // 8
+                if (dcf77bit==HIGH) dcf77_parity = !dcf77_parity;
+                break;
+            case 40: //break; // 10
+                if (dcf77bit==HIGH) dcf77_parity = !dcf77_parity;
+                break;
+            case 41: //break; // 20
+                if (dcf77bit==HIGH) dcf77_parity = !dcf77_parity;
+                break;
+            case 42: //break; // 1 day of week (monday 1, sunday 7)
+                dcf77_dayow = 0;
+                if (dcf77bit==HIGH)
+                {
+                    dcf77_dayow += 1;
+                    dcf77_parity = !dcf77_parity;
+                }
+                break;
+            case 43: //break; // 2
+                if (dcf77bit==HIGH)
+                {
+                    dcf77_dayow += 2;
+                    dcf77_parity = !dcf77_parity;
+                }
+                break;
+            case 44: //break; // 4
+                if (dcf77bit==HIGH)
+                {
+                    dcf77_dayow += 4;
+                    dcf77_parity = !dcf77_parity;
+                }
+                break;
+            case 45: //break; // 1 month
+                if (dcf77bit==HIGH) dcf77_parity = !dcf77_parity;
+                break;
+            case 46: //break; // 2
+                if (dcf77bit==HIGH) dcf77_parity = !dcf77_parity;
+                break;
+            case 47: //break; // 4
+                if (dcf77bit==HIGH) dcf77_parity = !dcf77_parity;
+                break;
+            case 48: //break; // 8
+                if (dcf77bit==HIGH) dcf77_parity = !dcf77_parity;
+                break;
+            case 49: //break; // 10
+                if (dcf77bit==HIGH) dcf77_parity = !dcf77_parity;
+                break;
+            case 50: //break; // 1 year within century
+                if (dcf77bit==HIGH) dcf77_parity = !dcf77_parity;
+                break;
+            case 51: //break; // 2
+                if (dcf77bit==HIGH) dcf77_parity = !dcf77_parity;
+                break;
+            case 52: //break; // 4
+                if (dcf77bit==HIGH) dcf77_parity = !dcf77_parity;
+                break;
+            case 53: //break; // 8
+                if (dcf77bit==HIGH) dcf77_parity = !dcf77_parity;
+                break;
+            case 54: //break; // 10
+                if (dcf77bit==HIGH) dcf77_parity = !dcf77_parity;
+                break;
+            case 55: //break; // 20
+                if (dcf77bit==HIGH) dcf77_parity = !dcf77_parity;
+                break;
+            case 56: //break; // 40
+                if (dcf77bit==HIGH) dcf77_parity = !dcf77_parity;
+                break;
+            case 57: //break; // 80
+                if (dcf77bit==HIGH) dcf77_parity = !dcf77_parity;
+                break;
+            case 58: //break; // even parity over bits 36 - 58
+                if (((dcf77bit==HIGH) && (!dcf77_parity)) ||
+                    ((dcf77bit==LOW) && (dcf77_parity)))
+                {
+                    dcf77_error=true;
+                    //uart_putc('X'); // error debug output line
+                }
+                if (!dcf77_error)
+                {
+                    tstruct t;
+                    t.second = 0;
+                    t.minute = dcf77_minute;
+                    t.hour = dcf77_hour;
+                    t.dayow = dcf77_dayow-1;
+                    rtc_set_time(&t);
+                }
+                break;
             default: break;
         }
         cnt++;
@@ -221,35 +425,46 @@ __interrupt void Port_1(void)
         static unsigned int rtc_last_ticks=0;
         unsigned int now = rtc_ticks;
         unsigned int diff = now-rtc_last_ticks;
+        rtc_last_ticks = now;
 
-        if ((P1IES&DCF77)!=0)
+        /* // timing debug output section
+        char s[6];
+        s[uint2str(s,diff,0)]='\0';
+        uart_puts(s);
+        uart_putc('\n'); uart_putc('\r');*/
+
+        if ((P1IN&DCF77)!=0)
         {
+            P1IES |= DCF77;
+            P1IFG &= ~DCF77; // P1.4 IFG cleared
+
             if ((diff>3)&&(diff<10)) // log "0" detected
             {
-
+                dcf77_synchro(LOW);
             }
             else if ((diff>10)&&(diff<16)) // log "1" detected
             {
-
+                dcf77_synchro(HIGH);
             }
             else // signal error (less than 4, more than 15 or 10 exactly)
             {
-
+                //dcf77_synchro(CLEAR);
             }
         }
         else
         {
+            P1IES &= ~DCF77;
+            P1IFG &= ~DCF77; // P1.4 IFG cleared
+
             if (diff<40) // signal error (too short pause)
             {
-
+                //dcf77_synchro(CLEAR);
             }
             else if (diff>100) // minute mark (probably
             {
-
+                dcf77_synchro(CLEAR);
             }
         }
-
-        P1IES ^= DCF77; // swap
     }
     /*P1IES ^= BUTTON; // toggle the interrupt edge,
     if (P1IES&BUTTON) pout_set(ON);
