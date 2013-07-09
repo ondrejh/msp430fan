@@ -43,7 +43,6 @@
 #include "uart.h"
 #include "rtc.h"
 #include "ds18b20.h"
-//#include "comm.h"
 #include "globvar.h"
 #include "pout.h"
 #include "dcf77.h"
@@ -69,7 +68,8 @@ void board_init(void)
 	DCOCTL = CALDCO_1MHZ;
 
     // button P1.3 & dcf77 P1.4
-    P1DIR&=~(BUTTON|DCF77); P1IE|=(BUTTON|DCF77); P1IES|=(BUTTON|DCF77); P1IFG&=~(BUTTON|DCF77); P1REN|=(BUTTON|DCF77);
+    P1DIR&=~(BUTTON|DCF77); P1IE|=(BUTTON|DCF77); P1IES|=(BUTTON|DCF77); P1IFG&=~(BUTTON|DCF77); P1REN|=(BUTTON);//|DCF77);
+    // note: no pullup on dcf77 input (soft filter expected)
 
 	LED_INIT(); // leds
 }
