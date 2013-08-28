@@ -1,5 +1,7 @@
-msp430fan - fan pwm driver with temperature sensor
+msp430fan
 =====================================
+
+MSP430 launchpad powered cooling fan driver with temperature sensor.
 
 Done:
 
