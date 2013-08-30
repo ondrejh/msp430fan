@@ -56,6 +56,7 @@ void ds18b20_bus_reset(ds18b20_sensor_t *s)
     wait(480);
     // release the bus
     *(s->port_dir) &= ~(s->port_mask); // P1DIR &= ~0x80;
+    *(s->port_out) |=  (s->port_mask);
     // wait 480us
     wait(480);
 }
@@ -69,6 +70,7 @@ void ds18b20_write_zero(ds18b20_sensor_t *s)
     wait(60);
     // release the bus
     *(s->port_dir) &= ~(s->port_mask); // P1DIR &= ~0x80;
+    *(s->port_out) |=  (s->port_mask);
 }
 
 void ds18b20_write_one(ds18b20_sensor_t *s)
@@ -78,6 +80,7 @@ void ds18b20_write_one(ds18b20_sensor_t *s)
     *(s->port_dir) |=  (s->port_mask); // P1DIR |= 0x80;
     // release the bus
     *(s->port_dir) &= ~(s->port_mask); // P1DIR &= ~0x80;
+    *(s->port_out) |=  (s->port_mask);
     // wait 60us
     wait(60);
 }
@@ -104,6 +107,7 @@ int ds18b20_read_bit(ds18b20_sensor_t *s)
     // release the bus
     //P1DIR &= ~0x80;
     *(s->port_dir) &= ~(s->port_mask);
+    *(s->port_out) |=  (s->port_mask);
     // test input
     //if ((P1IN&0x80)!=0) retval = 1;
     if ((*(s->port_in)&(s->port_mask))!=0) retval = 1;
@@ -146,8 +150,8 @@ void ds18b20_init(ds18b20_sensor_t *s,
 
     // setup port
     *(s->port_dir) &= ~(s->port_mask);
-    *(s->port_out) &= ~(s->port_mask);
-    *(s->port_ren) &= ~(s->port_mask);
+    *(s->port_out) |=  (s->port_mask);
+    *(s->port_ren) |=  (s->port_mask);
 }
 
 // send start conversion command

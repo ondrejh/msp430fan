@@ -2,6 +2,7 @@
 #include <msp430g2553.h>
 #include "comm.h"
 #include "pwm.h"
+#include "global.h"
 
 // init pwm
 void pwm_init(void)

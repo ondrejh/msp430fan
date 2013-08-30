@@ -5,10 +5,12 @@
  *
  **/
 
-#include <string.h>
+//#include <string.h>
 
 #include "comm.h"
+#include "pwm.h"
 #include "uart.h"
+#include "global.h"
 
 #define MAX_NUM_LEN 7
 
@@ -17,10 +19,6 @@ int16_t str2uint(char *s);
 //int uint2str(char *s, uint16_t d, int l);
 int float2str(char *s, float f, int d);
 int getdec(uint16_t val);
-
-int16_t  t_val = 0;
-uint16_t t_err = 0;
-uint16_t p_val = 0;
 
 // local functions implementation
 
@@ -109,23 +107,25 @@ int getdec(uint16_t val)
 
 int use_command(char *cmdbuf)
 {
-    int cmdlen = strlen(cmdbuf);
+    //int cmdlen = strlen(cmdbuf);
+    int cmdlen;
+    for (cmdlen=0;;cmdlen++) if (cmdbuf[cmdlen]=='\0') break;
 
     // "?" command
-    if ((cmdlen==1) && (strncmp(cmdbuf,"?\0",2)==0))
+    if ((cmdlen==1) && (cmdbuf[0]=='?'))
     {
         uart_puts("Hello World!\n\r");
         return 0;
     }
 
     // print temp command: "T?"
-    if ((cmdlen==2) && (strncmp(cmdbuf,"T?\0",3)==0))
+    if ((cmdlen==2) && (cmdbuf[0]=='T') && (cmdbuf[1]=='?'))
     {
         char retstr[UART_TX_BUFLEN];
         int16_t t = t_val;
         uint16_t e = t_err;
         char *s = retstr;
-        *s++='\n'; *s++='T'; *s++=' ';
+        /* *s++='\n';*/ *s++='T'; *s++=' ';
         if (e==0)
         {
             if (t<0) {*s++='-'; t=-t;}
@@ -136,37 +136,33 @@ int use_command(char *cmdbuf)
         }
         else
         {
-            strncpy(s,"---",3); s+=3;
+            //strncpy(s,"---",3); s+=3;
+            *s++='-'; *s++='-'; *s++='-';
         }
-        strncpy(s,"\n\r\0",3); //s+=3;
+        //strncpy(s,"\n\r\0",3); //s+=3;
+        *s++='\n'; *s++='\r'; *s++='\0';
         uart_puts(retstr);
         return 0;
     }
 
-    // print power command: "P?"
-    if ((cmdlen==2) && (strncmp(cmdbuf,"P?\0",3)==0))
+    // set power command: "P xxx"
+    if ((cmdlen>1) && (cmdbuf[0]=='P'))
     {
-        char retstr[UART_TX_BUFLEN];
-        uint16_t p = p_val;
-        char *s = retstr;
-        *s++='\n'; *s++='P'; *s++=' ';
-        s+=uint2str(s,p,1);
-        *s++='%';
-        strncpy(s,"\n\r\0",3); //s+=3;
-        uart_puts(retstr);
-        return 0;
-    }
-
-    // set power command: "Pxxx"
-    if ((cmdlen>1) && (strncmp(cmdbuf,"P ",2)==0))
-    {
-        int p = str2uint(&cmdbuf[2]);
-        if (p!=-1)
+        if (cmdbuf[1]==' ')
         {
-            pwm_set(p);
+            int p = str2uint(&cmdbuf[2]);
+            if (p!=-1) pwm_set(p);
+        }
+        if ((cmdbuf[1]==' ') || (cmdbuf[1]=='?'))
+        {
             char retstr[UART_TX_BUFLEN];
-            char *s=retstr;
-            strncpy(s,"\nOK\n\r\0",6);
+            uint16_t p = p_val;
+            char *s = retstr;
+            /* *s++='\n';*/ *s++='P'; *s++=' ';
+            s+=uint2str(s,p,1);
+            *s++='%';
+            //strncpy(s,"\n\r\0",3); //s+=3;
+            *s++='\n'; *s++='\r'; *s++='\0';
             uart_puts(retstr);
             return 0;
         }

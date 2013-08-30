@@ -13,13 +13,13 @@
 
 // include section
 #include <msp430g2553.h>
-#include <string.h>
+//#include <string.h>
 
 #include "uart.h"
 #include "comm.h"
 
 // uart TX led
-#define UART_TX_LED 1
+#define UART_TX_LED 0
 #if UART_TX_LED==1
 	// TX led port 1 pin 0, active high
 	#define UART_TX_LED_INIT() {P1DIR|=0x01;UART_TX_LED_OFF();}
@@ -63,25 +63,11 @@ int8_t c2h(char c)
     return -1;
 }
 
-// RS485 like data direction controll
-void tx_output_enable(bool enable)
-{
-    /*if (enable)
-    {
-        P1SEL |= BIT2;
-        P1SEL2 |= BIT2;
-    }
-    else
-    {
-        P1SEL &= ~BIT2;
-        P1SEL2 &= ~BIT2;
-    }*/
-}
-
 // uart initialization
 void uart_init(void)
 {
 	UART_TX_LED_INIT();
+	UART_TX_ENABLE_INIT();
 
 	P1SEL = BIT1 + BIT2 ;   // P1.1 = RXD, P1.2=TXD
 	P1SEL2 = BIT1 + BIT2 ;  // P1.1 = RXD, P1.2=TXD
@@ -101,6 +87,7 @@ int uart_start_tx(void)
 		uart_tx_transmitt=false; // clear transmit flag
 		return -1; // don't start when buffer empty
 	}
+	UART_TX_ENABLE_ON();
 	UART_TX_LED_ON(); // LED ON
 	//while (!(IFG2&UCA0TXIFG));	// USCI_A0 TX buffer ready?
 #ifdef UART_TX_BUFMASK
@@ -165,11 +152,11 @@ void use_rx_buffer(int bufptr)
 #pragma vector=USCIAB0RX_VECTOR
 __interrupt void USCI0RX_ISR(void)
 {
-    tx_output_enable(true);
+    //tx_output_enable(true);
 	//UART_TX_LED_ON();
 	bool error = UCA0STAT & (UCFE|UCOE|UCPE|UCBRK|UCRXERR);
 	char c = UCA0RXBUF;		// read char
-    uart_putc(c);
+    //uart_putc(c);
 	if (!error)
 	{
 
@@ -193,6 +180,6 @@ __interrupt void USCI0TX_ISR(void)
     if (uart_start_tx()!=0)
     {
         UART_TX_LED_OFF();
-        IE2 &= ~UCA0TXIE;		// Disable USCI_A0 TX interrupt
+        IE2 &= ~UCA0TXIE;		    // Disable USCI_A0 TX interrupt
     }
 }
