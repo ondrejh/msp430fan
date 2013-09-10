@@ -3,8 +3,8 @@
 #ifndef __GLOBAL_H__
 #define __GLOBAL_H__
 
-int16_t  t_val;
-uint16_t t_err;
-uint16_t p_val;
+volatile int t_val;
+volatile int t_err;
+volatile int p_val;
 
 #endif

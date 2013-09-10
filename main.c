@@ -11,9 +11,7 @@
 //         /|\|                 |
 //          | |           P1.1,2|--> UART (debug output 9.6kBaud)
 //          --|RST              |
-//            |             XTAL|<---> 32.768kHz quartz
-//            |                 |
-//            |             P1.0|--> COMMUNICATION LED
+//            |             P1.0|--> COMMUNICATION LED (and TXEN in RS485 mode)
 //            |                 |
 //            |             P1.6|--> FAN OUTPUT (PWM)
 //            |                 |
@@ -76,20 +74,16 @@ int main(void)
 	board_init(); // init dco and leds
 	uart_init(); // init uart
 	wdt_timer_init();
-	//pwm_init();
+	pwm_init();
 
 	ds18b20_sensor_t s; // init ds18b20 sensors
 	ds18b20_init(&s,&P1OUT,&P1IN,&P1REN,&P1DIR,7); // sensor 0: PORT1 pin 7
 
 	while(1)
 	{
-	    LED_GREEN_ON();
         ds18d20_start_conversion(&s); // start conversion
-        LED_GREEN_OFF();
         __bis_SR_register(CPUOFF + GIE); // enter sleep mode (leave on wdt second event)
-        LED_GREEN_ON();
         ds18b20_read_conversion(&s); // read data from sensor
-        LED_GREEN_OFF();
         if (s.valid==true)
         {
             t_val=s.data.temp; // save temperature value
