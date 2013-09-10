@@ -23,6 +23,7 @@
  *      printf("!ERROR!\n"); // show error
  *    }
  *
+ * edit 9.9.2013: disable interrupts in timing critical functions (bit read/write)
  */
 
 #include <msp430g2553.h>
@@ -63,6 +64,8 @@ void ds18b20_bus_reset(ds18b20_sensor_t *s)
 
 void ds18b20_write_zero(ds18b20_sensor_t *s)
 {
+    _BIC_SR(GIE);      // Disable interrupts
+
     // pull bus low
     *(s->port_out) &= ~(s->port_mask); // P1OUT &= ~0x80;
     *(s->port_dir) |=  (s->port_mask); // P1DIR |= 0x80;
@@ -71,10 +74,14 @@ void ds18b20_write_zero(ds18b20_sensor_t *s)
     // release the bus
     *(s->port_dir) &= ~(s->port_mask); // P1DIR &= ~0x80;
     *(s->port_out) |=  (s->port_mask);
+
+    _BIS_SR(GIE);      // Enable interrupts
 }
 
 void ds18b20_write_one(ds18b20_sensor_t *s)
 {
+    _BIC_SR(GIE);      // Disable interrupts
+
     // pull bus low
     *(s->port_out) &= ~(s->port_mask); // P1OUT &= ~0x80;
     *(s->port_dir) |=  (s->port_mask); // P1DIR |= 0x80;
@@ -83,6 +90,8 @@ void ds18b20_write_one(ds18b20_sensor_t *s)
     *(s->port_out) |=  (s->port_mask);
     // wait 60us
     wait(60);
+
+    _BIS_SR(GIE);      // Enable interrupts
 }
 
 void ds18b20_write_byte(ds18b20_sensor_t *s, uint8_t b)
@@ -98,6 +107,8 @@ void ds18b20_write_byte(ds18b20_sensor_t *s, uint8_t b)
 
 int ds18b20_read_bit(ds18b20_sensor_t *s)
 {
+    _BIC_SR(GIE);      // Disable interrupts
+
     int retval = 0;
     // pull bus low
     //P1OUT &= ~0x80;
@@ -113,7 +124,9 @@ int ds18b20_read_bit(ds18b20_sensor_t *s)
     if ((*(s->port_in)&(s->port_mask))!=0) retval = 1;
     // wait 60 us
     wait(60);
+
     // return
+    _BIS_SR(GIE);      // Enable interrupts
     return retval;
 }
 

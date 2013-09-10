@@ -53,8 +53,8 @@ void board_init(void)
 // init timer (wdt used)
 void wdt_timer_init(void)
 {
-    //WDTCTL = WDT_MDLY_0_5;   // Set Watchdog Timer interval to ~0.5ms
-    WDTCTL = WDT_MDLY_8;   // Set Watchdog Timer interval to ~8ms
+    WDTCTL = WDT_MDLY_0_5;   // Set Watchdog Timer interval to ~0.5ms
+    //WDTCTL = WDT_MDLY_8;   // Set Watchdog Timer interval to ~8ms
     IE1 |= WDTIE;           // Enable WDT interrupt
 }
 
@@ -76,16 +76,20 @@ int main(void)
 	board_init(); // init dco and leds
 	uart_init(); // init uart
 	wdt_timer_init();
-	pwm_init();
+	//pwm_init();
 
 	ds18b20_sensor_t s; // init ds18b20 sensors
 	ds18b20_init(&s,&P1OUT,&P1IN,&P1REN,&P1DIR,7); // sensor 0: PORT1 pin 7
 
 	while(1)
 	{
+	    LED_GREEN_ON();
         ds18d20_start_conversion(&s); // start conversion
+        LED_GREEN_OFF();
         __bis_SR_register(CPUOFF + GIE); // enter sleep mode (leave on wdt second event)
+        LED_GREEN_ON();
         ds18b20_read_conversion(&s); // read data from sensor
+        LED_GREEN_OFF();
         if (s.valid==true)
         {
             t_val=s.data.temp; // save temperature value
@@ -93,7 +97,6 @@ int main(void)
         }
         else if (t_err!=0xFFFF) t_err++; // increase error counter
         __bis_SR_register(CPUOFF + GIE); // enter sleep mode (leave on wdt second event)
-        LED_GREEN_SWAP();
 	}
 
 	return -1;
@@ -106,8 +109,8 @@ __interrupt void watchdog_timer(void)
     static int cnt = 0;
 
     cnt++;
-    //if (cnt==2000)
-    if (cnt==125)
+    if (cnt==2000)
+    //if (cnt==125)
     {
         cnt = 0;
         __bic_SR_register_on_exit(CPUOFF);  // Clear CPUOFF bit from 0(SR)
