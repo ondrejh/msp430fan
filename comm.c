@@ -118,78 +118,65 @@ int use_command(char *cmdbuf)
         return 0;
     }*/
 
-    if ((cmdlen>4) && (cmdbuf[0]=='@') && (cmdbuf[1]=='A') && (cmdbuf[2]=='1') && (cmdbuf[3]==':'))
+    // print temp command: "TX?"
+    if ((cmdlen==3) && (cmdbuf[0]=='T') && (cmdbuf[1]>='1') && (cmdbuf[1]<='4') && (cmdbuf[2]=='?'))
     {
-        // print temp command: "@A1:T?"
-        if ((cmdlen==6) && (cmdbuf[4]=='T') && (cmdbuf[5]=='?'))
+        char retstr[UART_TX_BUFLEN];
+        int n = cmdbuf[1]-'1';
+        int16_t t = t_val[n];
+        uint16_t e = t_err[n];
+        char *s = retstr;
+        // /* *s++='\n';*/ *s++='T'; *s++=' ';
+        if (e==0)
+        {
+            if (t<0) {*s++='-'; t=-t;}
+            s+=uint2str(s,t>>4,0);
+            *s++='.';
+            s+=uint2str(s,getdec(t),1);
+            *s++='C';
+        }
+        else
+        {
+            //strncpy(s,"---",3); s+=3;
+            *s++='-'; *s++='-'; *s++='-';
+        }
+        //strncpy(s,"\n\r\0",3); //s+=3;
+        *s++='\n'; *s++='\r'; *s++='\0';
+        uart_puts(retstr);
+        return 0;
+    }
+
+    // set power command: "P xxx"
+    if ((cmdlen>1) && (cmdbuf[0]=='P'))
+    {
+        if (cmdbuf[1]==' ')
+        {
+            if (cmdbuf[2]=='O')
+            {
+                if ((cmdbuf[3]=='N') && (cmdbuf[8]=='\0'))
+                    pwm_set(100);
+                else if ((cmdbuf[3]=='F') && (cmdbuf[4]=='F') && (cmdbuf[5]=='\0'))
+                    pwm_set(0);
+            }
+        }
+        else if (cmdbuf[1]=='?')
         {
             char retstr[UART_TX_BUFLEN];
-            int16_t t = t_val;
-            uint16_t e = t_err;
+            //uint16_t p = p_val;
             char *s = retstr;
-            // /* *s++='\n';*/ *s++='T'; *s++=' ';
-            if (e==0)
+            // /* *s++='\n';*/ *s++='P'; *s++=' ';
+            if (p_val==0)
             {
-                if (t<0) {*s++='-'; t=-t;}
-                s+=uint2str(s,t>>4,0);
-                *s++='.';
-                s+=uint2str(s,getdec(t),1);
-                *s++='C';
+                *s++='O'; *s++='F'; *s++='F';
             }
-            else
+            else if (p_val==100)
             {
-                //strncpy(s,"---",3); s+=3;
-                *s++='-'; *s++='-'; *s++='-';
+                *s++='O'; *s++='N';
             }
             //strncpy(s,"\n\r\0",3); //s+=3;
             *s++='\n'; *s++='\r'; *s++='\0';
             uart_puts(retstr);
             return 0;
-        }
-
-        // set power command: "@A1:P xxx"
-        if ((cmdlen>5) && (cmdbuf[4]=='P'))
-        {
-            if (cmdbuf[5]==' ')
-            {
-                if (cmdbuf[6]=='O')
-                {
-                    if ((cmdbuf[7]=='N') && (cmdbuf[8]=='\0'))
-                        pwm_set(100);
-                    else if ((cmdbuf[7]=='F') && (cmdbuf[8]=='F') && (cmdbuf[9]=='\0'))
-                        pwm_set(0);
-                }
-                else
-                {
-                    int p = str2uint(&cmdbuf[6]);
-                    if (p!=-1)
-                        pwm_set(p);
-                }
-            }
-            if ((cmdbuf[5]==' ') || (cmdbuf[5]=='?'))
-            {
-                char retstr[UART_TX_BUFLEN];
-                //uint16_t p = p_val;
-                char *s = retstr;
-                // /* *s++='\n';*/ *s++='P'; *s++=' ';
-                if (p_val==0)
-                {
-                    *s++='O'; *s++='F'; *s++='F';
-                }
-                else if (p_val==100)
-                {
-                    *s++='O'; *s++='N';
-                }
-                else
-                {
-                    s+=uint2str(s,p_val,1);
-                    *s++='%';
-                }
-                //strncpy(s,"\n\r\0",3); //s+=3;
-                *s++='\n'; *s++='\r'; *s++='\0';
-                uart_puts(retstr);
-                return 0;
-            }
         }
     }
 

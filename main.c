@@ -11,11 +11,14 @@
 //         /|\|                 |
 //          | |           P1.1,2|--> UART (debug output 9.6kBaud)
 //          --|RST              |
-//            |             P1.0|--> COMMUNICATION LED (and TXEN in RS485 mode)
+//            |             P1.0|--> COMMUNICATION LED
 //            |                 |
-//            |             P1.6|--> FAN OUTPUT (PWM)
+//            |             P1.6|--> Heating output
 //            |                 |
-//            |             P2.0|<---> Temp. sensor DS18B20
+//            |             P1.5|<---> Temp. 1. (sensor DS18B20)
+//            |             P2.0|<---> Temp. 2.
+//            |             P2.1|<---> Temp. 3.
+//            |             P2.2|<---> Temp. 4.
 //            |                 |
 //
 //******************************************************************************
@@ -59,8 +62,12 @@ void wdt_timer_init(void)
 // init global variables
 void global_init(void)
 {
-    t_val = 0;
-    t_err = 0;
+    int i;
+    for (i=0;i<4;i++)
+    {
+        t_val[i] = 0;
+        t_err[i] = 1;
+    }
     p_val = 0;
 }
 
@@ -76,20 +83,26 @@ int main(void)
 	wdt_timer_init();
 	pwm_init();
 
-	ds18b20_sensor_t s; // init ds18b20 sensors
-	ds18b20_init(&s,&P1OUT,&P1IN,&P1REN,&P1DIR,7); // sensor 0: PORT1 pin 7
+	ds18b20_sensor_t s[4]; // init ds18b20 sensors
+	ds18b20_init(&s[0],&P1OUT,&P1IN,&P1REN,&P1DIR,5); // sensor 0: PORT1 pin 5
+	ds18b20_init(&s[1],&P2OUT,&P2IN,&P2REN,&P2DIR,0); // sensor 1: PORT2 pin 0
+	ds18b20_init(&s[2],&P2OUT,&P2IN,&P2REN,&P2DIR,1); // sensor 2: PORT2 pin 1
+	ds18b20_init(&s[3],&P2OUT,&P2IN,&P2REN,&P2DIR,2); // sensor 3: PORT2 pin 2
 
 	while(1)
 	{
-        ds18d20_start_conversion(&s); // start conversion
+	    static int n = 0;
+
+        ds18d20_start_conversion(&s[n]); // start conversion
         __bis_SR_register(CPUOFF + GIE); // enter sleep mode (leave on wdt second event)
-        ds18b20_read_conversion(&s); // read data from sensor
-        if (s.valid==true)
+        ds18b20_read_conversion(&s[n]); // read data from sensor
+        if (s[n].valid==true)
         {
-            t_val=s.data.temp; // save temperature value
-            t_err=0; // clear error counter
+            t_val[n]=s[n].data.temp; // save temperature value
+            t_err[n]=0; // clear error counter
         }
-        else if (t_err!=0xFFFF) t_err++; // increase error counter
+        else if (t_err[n]!=0xFFFF) t_err[n]++; // increase error counter
+        n++; n&=0x03;
         __bis_SR_register(CPUOFF + GIE); // enter sleep mode (leave on wdt second event)
 	}
 

@@ -156,7 +156,7 @@ __interrupt void USCI0RX_ISR(void)
 	//UART_TX_LED_ON();
 	bool error = UCA0STAT & (UCFE|UCOE|UCPE|UCBRK|UCRXERR);
 	char c = UCA0RXBUF;		// read char
-    //uart_putc(c);
+    uart_putc(c);
 	if (!error)
 	{
 

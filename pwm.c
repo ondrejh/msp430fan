@@ -4,6 +4,9 @@
 #include "pwm.h"
 #include "global.h"
 
+// init heating output
+
+
 // init pwm
 void pwm_init(void)
 {
