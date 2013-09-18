@@ -7,23 +7,34 @@ def comm(portname,command):
 
     with Serial(portname,baudrate=9600,timeout=0.1) as port:
         port.write(command.encode('ascii'))
-        return port.readlines()[-2].strip().decode('ascii')
+        answ = port.readlines()
+        if len(answ)>1:
+            return answ[-2].strip().decode('ascii')
+        return '???'
 
-def read_temp(portname):
+def read_temp(portname,channel):
     ''' read temperature '''
 
-    return comm(portname,'@A1:T?\n')
+    if type(channel)!=int:
+        print('wrong channel type')
+        return
+    if int(channel)<1 or int(channel)>4:
+        print('channel out of range')
+        return
+
+    return comm(portname,'T{}?\n'.format(channel))
 
 def read_out(portname):
     ''' read ouput status '''
 
-    return comm(portname,'@A1:P?\n')
+    return comm(portname,'H?\n')
 
 def set_out(portname,outval):
     ''' set output status '''
 
-    return comm(portname,'@A1:P {}\n'.format(outval))
+    return comm(portname,'H {}\n'.format(outval))
 
 if __name__ == '__main__':
-    print(comm('/dev/ttyACM0','@A1:T?\n'))
+    #print(comm('/dev/ttyACM0','T1?\n'))
+    print(comm('COM7','T1?\n'))
 

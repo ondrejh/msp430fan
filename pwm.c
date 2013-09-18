@@ -4,40 +4,21 @@
 #include "pwm.h"
 #include "global.h"
 
-// init heating output
-
-
-// init pwm
-void pwm_init(void)
+// set heating output and internall value
+void heating_set(heating_status status)
 {
-    P1DIR |= BIT6; // P1.6 to output
-    P1SEL |= BIT6; // P1.6 to TA0.1
-
-    CCR0 = 10000-1; // PWM Period (10ms ~ 100Hz)
-    CCTL1 = OUTMOD_7; // CCR1 reset/set
-    CCR1 = 0; // CCR1 PWM duty cycle
-    TACTL = TASSEL_2 + MC_1; // SMCLK, up mode
-}
-
-// set pwm value (0..100)
-void pwm_set(int val)
-{
-    if (val>0)
+    if (status == ON)
     {
-        if (val<100)
-        {
-            CCR1 = val*100;
-            p_val = val;
-        }
-        else
-        {
-            CCR1 = 10000;
-            p_val = 100;
-        }
+        heating = ON;
+        HEATING_ON();
+        return;
     }
-    else
+    if (status == OFF)
     {
-        CCR1 = 0;
-        p_val = 0;
+        heating = OFF;
+        HEATING_OFF();
+        return;
     }
+    heating = AUTO;
+    return;
 }

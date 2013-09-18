@@ -10,3 +10,4 @@ msp430solar.txt
 crc/*.exe
 msp430fan.txt
 hw/objednavka.*
+gui/__pycache__/

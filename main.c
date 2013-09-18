@@ -48,15 +48,17 @@ void board_init(void)
 	BCSCTL1 = CALBC1_1MHZ;		// Set DCO
 	DCOCTL = CALDCO_1MHZ;
 
-	LED_INIT(); // leds
+	//LED_INIT(); // leds
+
+	HEATING_INIT();
 }
 
 // init timer (wdt used)
 void wdt_timer_init(void)
 {
-    WDTCTL = WDT_MDLY_0_5;   // Set Watchdog Timer interval to ~0.5ms
-    //WDTCTL = WDT_MDLY_8;   // Set Watchdog Timer interval to ~8ms
-    IE1 |= WDTIE;           // Enable WDT interrupt
+    //WDTCTL = WDT_MDLY_0_5; // Set Watchdog Timer interval to ~0.5ms
+    WDTCTL = WDT_MDLY_8; // Set Watchdog Timer interval to ~8ms
+    IE1 |= WDTIE;        // Enable WDT interrupt
 }
 
 // init global variables
@@ -68,7 +70,11 @@ void global_init(void)
         t_val[i] = 0;
         t_err[i] = 1;
     }
-    p_val = 0;
+    heating = OFF;
+
+    hauto.channel=1; // T2
+    hauto.temperature=79*16; // 79C
+    hauto.hysteresis=8; // 0.5C
 }
 
 // main program body
@@ -80,8 +86,8 @@ int main(void)
 
 	board_init(); // init dco and leds
 	uart_init(); // init uart
-	wdt_timer_init();
-	pwm_init();
+	wdt_timer_init(); // used for main timing
+	//pwm_init();
 
 	ds18b20_sensor_t s[4]; // init ds18b20 sensors
 	ds18b20_init(&s[0],&P1OUT,&P1IN,&P1REN,&P1DIR,5); // sensor 0: PORT1 pin 5
@@ -94,6 +100,27 @@ int main(void)
 	    static int n = 0;
 
         ds18d20_start_conversion(&s[n]); // start conversion
+
+        if (heating==AUTO)
+        {
+            if (n==((hauto.channel+1)&0x03)) // last time measured the value
+            {
+                if (t_err[hauto.channel]==0) // measured value valid
+                {
+                    if (HEATING)
+                    {
+                        if (t_val[hauto.channel]>(hauto.temperature+hauto.hysteresis))
+                            HEATING_OFF();
+                    }
+                    else
+                    {
+                        if (t_val[hauto.channel]<(hauto.temperature-hauto.hysteresis))
+                            HEATING_ON();
+                    }
+                }
+            }
+        }
+
         __bis_SR_register(CPUOFF + GIE); // enter sleep mode (leave on wdt second event)
         ds18b20_read_conversion(&s[n]); // read data from sensor
         if (s[n].valid==true)
@@ -103,6 +130,7 @@ int main(void)
         }
         else if (t_err[n]!=0xFFFF) t_err[n]++; // increase error counter
         n++; n&=0x03;
+
         __bis_SR_register(CPUOFF + GIE); // enter sleep mode (leave on wdt second event)
 	}
 
@@ -116,8 +144,8 @@ __interrupt void watchdog_timer(void)
     static int cnt = 0;
 
     cnt++;
-    if (cnt==2000)
-    //if (cnt==125)
+    //if (cnt==2000)
+    if (cnt==125)
     {
         cnt = 0;
         __bic_SR_register_on_exit(CPUOFF);  // Clear CPUOFF bit from 0(SR)

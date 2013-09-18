@@ -7,6 +7,8 @@
 
 //#include <string.h>
 
+#include <msp430g2553.h>
+
 #include "comm.h"
 #include "pwm.h"
 #include "uart.h"
@@ -126,6 +128,7 @@ int use_command(char *cmdbuf)
         int16_t t = t_val[n];
         uint16_t e = t_err[n];
         char *s = retstr;
+        *s++='\n';
         // /* *s++='\n';*/ *s++='T'; *s++=' ';
         if (e==0)
         {
@@ -146,32 +149,53 @@ int use_command(char *cmdbuf)
         return 0;
     }
 
-    // set power command: "P xxx"
-    if ((cmdlen>1) && (cmdbuf[0]=='P'))
+    // set power command: "H xxx"
+    if ((cmdlen>1) && (cmdbuf[0]=='H'))
     {
         if (cmdbuf[1]==' ')
         {
             if (cmdbuf[2]=='O')
             {
-                if ((cmdbuf[3]=='N') && (cmdbuf[8]=='\0'))
-                    pwm_set(100);
+                if ((cmdbuf[3]=='N') && (cmdbuf[4]=='\0'))
+                    heating_set(ON);
                 else if ((cmdbuf[3]=='F') && (cmdbuf[4]=='F') && (cmdbuf[5]=='\0'))
-                    pwm_set(0);
+                    heating_set(OFF);
             }
+            else if ((cmdbuf[2]=='A') && (cmdbuf[3]=='U') && (cmdbuf[4]=='T') && (cmdbuf[5]=='O') && (cmdbuf[6]=='\0'))
+            {
+                heating_set(AUTO);
+            }
+            char retstr[UART_TX_BUFLEN];
+            char *s = retstr;
+            *s++='\n'; *s++='\0';
+            uart_puts(retstr);
         }
         else if (cmdbuf[1]=='?')
         {
             char retstr[UART_TX_BUFLEN];
             //uint16_t p = p_val;
             char *s = retstr;
+            *s++='\n';
             // /* *s++='\n';*/ *s++='P'; *s++=' ';
-            if (p_val==0)
+            if (heating==OFF)
             {
                 *s++='O'; *s++='F'; *s++='F';
             }
-            else if (p_val==100)
+            else if (heating==ON)
             {
                 *s++='O'; *s++='N';
+            }
+            else
+            {
+                *s++='A'; *s++='U'; *s++='T'; *s++='O'; *s++=' ';
+                if (HEATING)
+                {
+                    *s++='O'; *s++='N';
+                }
+                else
+                {
+                    *s++='O'; *s++='F'; *s++='F';
+                }
             }
             //strncpy(s,"\n\r\0",3); //s+=3;
             *s++='\n'; *s++='\r'; *s++='\0';
