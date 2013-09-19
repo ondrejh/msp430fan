@@ -11,3 +11,4 @@ crc/*.exe
 msp430fan.txt
 hw/objednavka.*
 gui/__pycache__/
+gui/ebio.xml

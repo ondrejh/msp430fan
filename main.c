@@ -90,10 +90,10 @@ int main(void)
 	//pwm_init();
 
 	ds18b20_sensor_t s[4]; // init ds18b20 sensors
-	ds18b20_init(&s[0],&P1OUT,&P1IN,&P1REN,&P1DIR,5); // sensor 0: PORT1 pin 5
-	ds18b20_init(&s[1],&P2OUT,&P2IN,&P2REN,&P2DIR,0); // sensor 1: PORT2 pin 0
-	ds18b20_init(&s[2],&P2OUT,&P2IN,&P2REN,&P2DIR,1); // sensor 2: PORT2 pin 1
-	ds18b20_init(&s[3],&P2OUT,&P2IN,&P2REN,&P2DIR,2); // sensor 3: PORT2 pin 2
+	ds18b20_init(&s[0],&P2OUT,&P2IN,&P2REN,&P2DIR,2); // sensor 0: PORT2 pin 2
+	ds18b20_init(&s[1],&P2OUT,&P2IN,&P2REN,&P2DIR,1); // sensor 1: PORT2 pin 1
+	ds18b20_init(&s[2],&P2OUT,&P2IN,&P2REN,&P2DIR,0); // sensor 2: PORT2 pin 0
+	ds18b20_init(&s[3],&P1OUT,&P1IN,&P1REN,&P1DIR,5); // sensor 3: PORT1 pin 5
 
 	while(1)
 	{
@@ -103,20 +103,25 @@ int main(void)
 
         if (heating==AUTO)
         {
-            if (n==((hauto.channel+1)&0x03)) // last time measured the value
+            if (n==(hauto.channel&0x03)) // last time measured the value
             {
-                if (t_err[hauto.channel]==0) // measured value valid
+                int chnl = (hauto.channel-1);
+                if (t_err[chnl]==0) // measured value valid
                 {
                     if (HEATING)
                     {
-                        if (t_val[hauto.channel]>(hauto.temperature+hauto.hysteresis))
+                        if (t_val[chnl]>(hauto.temperature+hauto.hysteresis))
                             HEATING_OFF();
                     }
                     else
                     {
-                        if (t_val[hauto.channel]<(hauto.temperature-hauto.hysteresis))
+                        if (t_val[chnl]<(hauto.temperature-hauto.hysteresis))
                             HEATING_ON();
                     }
+                }
+                else
+                {
+                    HEATING_OFF(); // temp. not measured
                 }
             }
         }

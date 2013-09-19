@@ -13,6 +13,7 @@
 #include "pwm.h"
 #include "uart.h"
 #include "global.h"
+#include "version.h"
 
 #define MAX_NUM_LEN 7
 
@@ -119,6 +120,12 @@ int use_command(char *cmdbuf)
         uart_puts("Hello World!\n\r");
         return 0;
     }*/
+
+    // print version: "V?"
+    if ((cmdlen==2) && (cmdbuf[0]=='V') && (cmdbuf[1]=='?'))
+    {
+        uart_puts(VERSION_STR);
+    }
 
     // print temp command: "TX?"
     if ((cmdlen==3) && (cmdbuf[0]=='T') && (cmdbuf[1]>='1') && (cmdbuf[1]<='4') && (cmdbuf[2]=='?'))

@@ -49,6 +49,7 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="uart.h" />
+		<Unit filename="version.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />
