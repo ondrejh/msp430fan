@@ -6,7 +6,8 @@ import xml.etree.ElementTree as etree
 portname = 'COM7'
 filename = 'ebio.xml'
 
-DefaultXML = """
+DefaultXML = \
+"""<?xml version='1.0' encoding='utf-8'?>
 <ebio>
     <Temp T1="---" T2="---"/>
     <Out Request="OFF" Status="---" />
@@ -28,9 +29,10 @@ def ReadValues(port):
 
     return retVal
 
-def UpdateXML(file,port):
-    ''' update xml file by read values '''
-
+def OpenXML(file):
+    ''' open xml file or create one
+    return: xml tree '''
+    
     try:
         tree = etree.parse(file)
     except:
@@ -38,9 +40,16 @@ def UpdateXML(file,port):
         f.write(DefaultXML)
         f.close()
 
+    tree = etree.parse(file)
+
+    return tree
+
+def UpdateXML(tree,port):
+    ''' update xml file by read values
+    return: updated xml tree '''
+
     values = ReadValues(port)
 
-    tree = etree.parse(file)
     root = tree.getroot()
     root.find('Temp').set('T1',values['T1'])
     root.find('Temp').set('T2',values['T2'])
@@ -50,6 +59,23 @@ def UpdateXML(file,port):
     if values['OUT'].split(' ')[-1]!=request:
         fan_comm.set_out(port,request)
 
+    return tree
+
+def SaveXML(tree,file):
+    ''' save xml tree into file '''
+    
     tree.write(file)
 
-UpdateXML(filename,portname)
+def OpenLog(logfilename):
+    ''' open log file or create one
+    return: file descriptor '''
+
+    try:
+        logfile = open(logfilename, mode='a')
+        return logfile
+    except:
+        logfile = open(logfilename, mode='w')
+        logfile.writeln('{}'.format(time.localtime))
+        
+
+SaveXML(UpdateXML(OpenXML(filename),portname),filename)
