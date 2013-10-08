@@ -33,13 +33,13 @@
 #include "global.h"
 
 // board (leds)
-#define LED_INIT() {P1DIR|=0x41;P1OUT&=~0x41;}
+/*#define LED_INIT() {P1DIR|=0x41;P1OUT&=~0x41;}
 #define LED_RED_ON() {P1OUT|=0x01;}
 #define LED_RED_OFF() {P1OUT&=~0x01;}
 #define LED_RED_SWAP() {P1OUT^=0x01;}
 #define LED_GREEN_ON() {P1OUT|=0x40;}
 #define LED_GREEN_OFF() {P1OUT&=~0x40;}
-#define LED_GREEN_SWAP() {P1OUT^=0x40;}
+#define LED_GREEN_SWAP() {P1OUT^=0x40;}*/
 
 // leds and dco init
 void board_init(void)
@@ -71,9 +71,12 @@ void global_init(void)
         t_err[i] = 1;
     }
     heating = OFF;
+    heating_power = 0;
 
     hauto.channel=1; // T2
-    hauto.temperature=79*16; // 79C
+    hauto.temperature1=79*16; // 79C
+    hauto.temperature2=75*16; // 75C
+    hauto.temperature3=70*16; // 70C
     hauto.hysteresis=8; // 0.5C
 }
 
@@ -103,26 +106,31 @@ int main(void)
 
         if (heating==AUTO)
         {
-            if (n==(hauto.channel&0x03)) // last time measured the value
+            int chnl = (hauto.channel-1);
+            if (t_err[chnl]==0) // measured value valid
             {
-                int chnl = (hauto.channel-1);
-                if (t_err[chnl]==0) // measured value valid
+                switch (heating_power)
                 {
-                    if (HEATING)
-                    {
-                        if (t_val[chnl]>(hauto.temperature+hauto.hysteresis))
-                            HEATING_OFF();
-                    }
-                    else
-                    {
-                        if (t_val[chnl]<(hauto.temperature-hauto.hysteresis))
-                            HEATING_ON();
-                    }
+                    case 0:
+                        if (t_val[chnl]<(hauto.temperature3-hauto.hysteresis)) heating_power++;
+                        break;
+                    case 1:
+                        if (t_val[chnl]<(hauto.temperature2-hauto.hysteresis)) heating_power++;
+                        if (t_val[chnl]>(hauto.temperature1+hauto.hysteresis)) heating_power--;
+                        break;
+                    case 2:
+                        if (t_val[chnl]<(hauto.temperature1-hauto.hysteresis)) heating_power++;
+                        if (t_val[chnl]>(hauto.temperature2+hauto.hysteresis)) heating_power--;
+                        break;
+                    case 3:
+                        if (t_val[chnl]>(hauto.temperature3+hauto.hysteresis)) heating_power--;
+                        break;
                 }
-                else
-                {
-                    HEATING_OFF(); // temp. not measured
-                }
+                heating_on(heating_power);
+            }
+            else
+            {
+                HEATING_OFF(); // temp. not measured
             }
         }
 

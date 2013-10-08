@@ -5,11 +5,14 @@
 
 #include "global.h"
 
-#define HEATING_INIT() {P1OUT&=~BIT6;P1DIR|=BIT6;}
-#define HEATING_ON() {P1OUT|=BIT6;}
-#define HEATING_OFF() {P1OUT&=~BIT6;}
-#define HEATING ((P1OUT&BIT6)!=0)
+#define HEATING_INIT() {P2OUT&=~(BIT3|BIT4|BIT5);P2DIR|=(BIT3|BIT4|BIT5);}
+//#define HEATING_ON() {P1OUT|=BIT6;}
+#define HEATING_OFF() {P2OUT&=~(BIT3|BIT4|BIT5);}
+//#define HEATING ((P2OUT&(BIT3|BIT4|BIT5))!=0)
+#define HEATING (((P2OUT&BIT3)>>3)+((P2OUT&BIT4)>>4)+((P2OUT&BIT5)>>5))
 
+void heating_on(int pwr);
 void heating_set(heating_status status);
+void heating_set_pwr(heating_status status, int power);
 
 #endif

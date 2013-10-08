@@ -11,11 +11,14 @@ typedef enum heating_status {
     AUTO,
 } heating_status;
 
+
 typedef struct heating_auto_settings heating_auto_settings;
 
 struct heating_auto_settings{
     int channel;
-    int temperature;
+    int temperature1;
+    int temperature2;
+    int temperature3;
     int hysteresis;
 };
 
@@ -24,5 +27,6 @@ heating_auto_settings hauto;
 volatile int t_val[4];
 volatile int t_err[4];
 volatile heating_status heating;
+volatile int heating_power;
 
 #endif

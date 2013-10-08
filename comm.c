@@ -163,8 +163,18 @@ int use_command(char *cmdbuf)
         {
             if (cmdbuf[2]=='O')
             {
-                if ((cmdbuf[3]=='N') && (cmdbuf[4]=='\0'))
-                    heating_set(ON);
+                if (cmdbuf[3]=='N')
+                {
+                    if (cmdbuf[4]=='\0')
+                    {
+                        if (heating_power<3) heating_set_pwr(ON,heating_power+1);
+                        heating_set(ON);
+                    }
+                    else if ((cmdbuf[4]=' ') && (cmdbuf[5]>'0') && (cmdbuf[5]<='3') && (cmdbuf[6]=='\0'))
+                    {
+                        heating_set_pwr(ON,cmdbuf[5]-'0');
+                    }
+                }
                 else if ((cmdbuf[3]=='F') && (cmdbuf[4]=='F') && (cmdbuf[5]=='\0'))
                     heating_set(OFF);
             }
@@ -190,14 +200,14 @@ int use_command(char *cmdbuf)
             }
             else if (heating==ON)
             {
-                *s++='O'; *s++='N';
+                *s++='O'; *s++='N'; *s++=' '; *s++='0'+heating_power;
             }
             else
             {
                 *s++='A'; *s++='U'; *s++='T'; *s++='O'; *s++=' ';
-                if (HEATING)
+                if (heating_power)
                 {
-                    *s++='O'; *s++='N';
+                    *s++='O'; *s++='N'; *s++=' '; *s++='0'+heating_power;
                 }
                 else
                 {
