@@ -6,14 +6,28 @@ def comm(portname,command):
     ''' send command and receive answer on specified port '''
 
     with Serial(portname,baudrate=9600,timeout=0.1) as port:
-        port.write(command.encode('ascii'))
-        answ = port.readlines()
-        if len(answ)>1:
-            return answ[-2].strip().decode('ascii')
-        return '???'
+        if type(command)==str:
+            command = [command]
+        answers = [];
+        for cmd in command:
+            port.write(cmd.encode('ascii'))
+            answ = port.readlines()
+            if len(answ)>1:
+                answers += [answ[-2].strip().decode('ascii')]
+            else:
+                answers += ['???']
 
-def read_temp(portname,channel):
-    ''' read temperature '''
+        if len(answers)==1:
+            return answers[0]
+
+        return answers
+            
+
+def read_temp(portname,channel=None):
+    ''' read temperature(s) '''
+
+    if channel == None:
+        return comm(portname,['T1?\n','T2?\n','T3?\n','T4?\n'])
 
     if type(channel)!=int:
         print('wrong channel type')
