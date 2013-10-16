@@ -1,0 +1,27 @@
+Install MySQL:
+
+	#apt-get install mysql-server mysql-client
+	set password during the installation (1234 for example)
+
+Create database:
+
+	run client and input password: #mysql -u root -p
+
+	create database (ebio) and tables (temp, heating), insert rows:
+	mysql>
+		create database ebio;
+		use ebio;
+		create table temp (id int, value VARCHAR(16));
+		insert into temp (id value) values (1,''),(2,''),(3,''),(4,'');
+		create table heating (request VARCHAR(32), status VARCHAR(32));
+		insert into heating (request,status) values ('OFF','');
+		
+	check if it works:
+	mysql>
+		show databases;
+		use ebio;
+		show tables;
+		select * from temp;
+		select * from heating;
+		
+		

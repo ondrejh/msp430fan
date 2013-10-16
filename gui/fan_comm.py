@@ -5,7 +5,7 @@ from serial import Serial
 def comm(portname,command):
     ''' send command and receive answer on specified port '''
 
-    with Serial(portname,baudrate=9600,timeout=0.1) as port:
+    with Serial(portname,baudrate=9600,timeout=0.02) as port:
         if type(command)==str:
             command = [command]
         answers = [];
