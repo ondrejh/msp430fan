@@ -65,7 +65,7 @@ void wdt_timer_init(void)
 void global_init(void)
 {
     int i;
-    for (i=0;i<4;i++)
+    for (i=0;i<5;i++)
     {
         t_val[i] = 0;
         t_err[i] = 1;
@@ -80,6 +80,24 @@ void global_init(void)
     hauto.hysteresis=8; // 0.5C
 }
 
+// init internal temperature sensor
+void temp_init(void)
+{
+    ADC10CTL1=INCH_10+ ADC10DIV_3; //temp sensor is at 10 and clock/4
+    ADC10CTL0=SREF_1 + REFON + ADC10ON + ADC10SHT_3 ; //1.5V ref,Ref on,64 clocks for sample
+}
+
+#define temp_start_conversion() do{ADC10CTL0|=ENC+ADC10SC;}while(0)
+
+int temp_read_conversion(void)
+{
+    while(ADC10CTL1 & BUSY);    //wait..i am converting..pum..pum..
+    int t=ADC10MEM&0x3FF;             //store val in t
+    ADC10CTL0&=~ENC;            //disable adc conv
+    return(int) (long)((((long)t - 673) * 423) / 64);
+    //return(int) ((t * 27069L - 18169625L)>>12);   //convert and pass
+}
+
 // main program body
 int main(void)
 {
@@ -91,6 +109,7 @@ int main(void)
 	uart_init(); // init uart
 	wdt_timer_init(); // used for main timing
 	//pwm_init();
+	temp_init();
 
 	ds18b20_sensor_t s[4]; // init ds18b20 sensors
 	ds18b20_init(&s[0],&P2OUT,&P2IN,&P2REN,&P2DIR,2); // sensor 0: PORT2 pin 2
@@ -142,7 +161,14 @@ int main(void)
             t_err[n]=0; // clear error counter
         }
         else if (t_err[n]!=0xFFFF) t_err[n]++; // increase error counter
-        n++; n&=0x03;
+        n++;
+        if (n==0x04) // get internal temperature
+        {
+            temp_start_conversion();
+            t_val[4] = temp_read_conversion(); // internal temperature
+            t_err[4] = 0;
+        }
+        n&=0x03;
 
         __bis_SR_register(CPUOFF + GIE); // enter sleep mode (leave on wdt second event)
 	}

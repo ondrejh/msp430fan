@@ -17,6 +17,7 @@ Table 'temp' should look like:
 |    2 | 22.4C |
 |    3 | ---   |
 |    4 | ---   |
+|    5 | ---   |
 +------+-------+
 where 'id' is type int and 'value' is type varchar.
 Table 'heating' should look like:
@@ -49,18 +50,18 @@ while True:
     #print(hdb)
     
     #read actual real temperatures and output status
-    val = fan_comm.comm(portname,['T1?\n','T2?\n','T3?\n','T4?\n','H?\n'])
+    val = fan_comm.comm(portname,['T1?\n','T2?\n','T3?\n','T4?\n','T5?\n','H?\n'])
     #print(val)
 
     #compare and update temperatures
-    for i in range(0,4):
+    for i in range(0,5):
         #temperatures
         if tdb[i][1]!=val[i]:
             cur.execute('''UPDATE {}.{} SET value='{}' WHERE id={};'''.format(db_name,db_temp_table,val[i],i+1))
     
     #compare and update heating status
-    if hdb[1]!=val[4]:
-        cur.execute('''UPDATE {}.{} SET status='{}';'''.format(db_name,db_heating_table,val[4]))
+    if hdb[1]!=val[5]:
+        cur.execute('''UPDATE {}.{} SET status='{}';'''.format(db_name,db_heating_table,val[5]))
 
     #check if some request (need to change heating status)
     #valid requests:

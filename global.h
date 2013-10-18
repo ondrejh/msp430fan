@@ -24,8 +24,8 @@ struct heating_auto_settings{
 
 heating_auto_settings hauto;
 
-volatile int t_val[4];
-volatile int t_err[4];
+volatile int t_val[5];
+volatile int t_err[5];
 volatile heating_status heating;
 volatile int heating_power;
 

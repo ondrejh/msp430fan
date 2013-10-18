@@ -128,7 +128,7 @@ int use_command(char *cmdbuf)
     }
 
     // print temp command: "TX?"
-    if ((cmdlen==3) && (cmdbuf[0]=='T') && (cmdbuf[1]>='1') && (cmdbuf[1]<='4') && (cmdbuf[2]=='?'))
+    if ((cmdlen==3) && (cmdbuf[0]=='T') && (cmdbuf[1]>='1') && (cmdbuf[1]<='5') && (cmdbuf[2]=='?'))
     {
         char retstr[UART_TX_BUFLEN];
         int n = cmdbuf[1]-'1';
