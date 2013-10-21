@@ -14,7 +14,11 @@ void heating_on(int pwr)
 
     static int mask = BIT3;
 
-    if (!fuse_switch) lpwr=0; // test fuse
+    // test fuse
+    if (!fuse_switch) // test fuse
+    {
+        lpwr=0;
+    }
 
     // increase power if needed
     while (HEATING<lpwr)
@@ -31,6 +35,9 @@ void heating_on(int pwr)
         mask<<=1;
         if (mask>BIT5) mask=BIT3;
     }
+
+    // ON 0 = OFF
+    if ((lpwr==0) && (heating==ON)) heating=OFF;
 
     heating_power = lpwr;
 }
