@@ -15,9 +15,9 @@
 //            |                 |
 //            |             P1.6|--> Heating output
 //            |                 |
-//            |             P1.5|<---> Temp. 1. (sensor DS18B20)
-//            |             P2.0|<---> Temp. 2.
-//            |             P2.1|<---> Temp. 3.
+//            | internal    P1.5|<---> Temp. 1. (sensor DS18B20)
+//            | sensor      P2.0|<---> Temp. 2.
+//            | Temp. 5     P2.1|<---> Temp. 3.
 //            |             P2.2|<---> Temp. 4.
 //            |                 |
 //
@@ -41,6 +41,10 @@
 #define LED_GREEN_OFF() {P1OUT&=~0x40;}
 #define LED_GREEN_SWAP() {P1OUT^=0x40;}*/
 
+// switch input P1.4
+#define SWITCH_INIT() do{P1DIR&=~0x10;P1OUT|=0x10;P1REN|=0x10;P1IE|=0x10;P1IES&=~0x10;P1IFG&=~0x10;}while(0)
+#define SWITCH() ((P1IN&0x10)==0)
+
 // leds and dco init
 void board_init(void)
 {
@@ -48,7 +52,7 @@ void board_init(void)
 	BCSCTL1 = CALBC1_1MHZ;		// Set DCO
 	DCOCTL = CALDCO_1MHZ;
 
-	//LED_INIT(); // leds
+	SWITCH_INIT();
 
 	HEATING_INIT();
 }
@@ -70,7 +74,7 @@ void global_init(void)
         t_val[i] = 0;
         t_err[i] = 1;
     }
-    heating = OFF;
+    heating = AUTO;
     heating_power = 0;
 
     hauto.channel=1; // T2
@@ -78,6 +82,8 @@ void global_init(void)
     hauto.temperature2=75*16; // 75C
     hauto.temperature3=70*16; // 70C
     hauto.hysteresis=8; // 0.5C
+
+    fuse_switch = SWITCH();
 }
 
 // init internal temperature sensor
@@ -126,7 +132,7 @@ int main(void)
         if (heating==AUTO)
         {
             int chnl = (hauto.channel-1);
-            if (t_err[chnl]==0) // measured value valid
+            if ((t_err[chnl]==0) && (fuse_switch)) // measured value valid
             {
                 switch (heating_power)
                 {
@@ -149,7 +155,7 @@ int main(void)
             }
             else
             {
-                HEATING_OFF(); // temp. not measured
+                HEATING_OFF(); // temp. not measured or fuse off
             }
         }
 
@@ -170,10 +176,21 @@ int main(void)
         }
         n&=0x03;
 
+        fuse_switch = SWITCH();
+
         __bis_SR_register(CPUOFF + GIE); // enter sleep mode (leave on wdt second event)
 	}
 
 	return -1;
+}
+
+// Heating fuse interrurp
+#pragma vector=PORT1_VECTOR
+__interrupt void Port_1(void)
+{
+  HEATING_OFF();
+  fuse_switch = false;
+  P1IFG &= ~0x10;                           // P1.4 IFG cleared
 }
 
 // Watchdog Timer interrupt service routine

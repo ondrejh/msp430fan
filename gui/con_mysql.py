@@ -50,7 +50,7 @@ while True:
     #print(hdb)
     
     #read actual real temperatures and output status
-    val = fan_comm.comm(portname,['T1?\n','T2?\n','T3?\n','T4?\n','T5?\n','H?\n'])
+    val = fan_comm.comm(portname,['T1?\n','T2?\n','T3?\n','T4?\n','T5?\n','H?\n','F?\n'])
     #print(val)
 
     #compare and update temperatures
@@ -59,9 +59,11 @@ while True:
         if tdb[i][1]!=val[i]:
             cur.execute('''UPDATE {}.{} SET value='{}' WHERE id={};'''.format(db_name,db_temp_table,val[i],i+1))
     
-    #compare and update heating status
+    #compare and update heating status and fuse
     if hdb[1]!=val[5]:
         cur.execute('''UPDATE {}.{} SET status='{}';'''.format(db_name,db_heating_table,val[5]))
+    if hdb[2]!=val[6]:
+        cur.execute('''UPDATE {}.{} SET fuse='{}';'''.format(db_name,db_heating_table,val[6]))
 
     #check if some request (need to change heating status)
     #valid requests:

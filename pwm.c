@@ -6,14 +6,18 @@
 
 void heating_on(int pwr)
 {
+    int lpwr = pwr;
+
     // beware endless cycle
-    if (pwr>3) return;
-    if (pwr<0) return;
+    if (lpwr>3) return;
+    if (lpwr<0) return;
 
     static int mask = BIT3;
 
+    if (!fuse_switch) lpwr=0; // test fuse
+
     // increase power if needed
-    while (HEATING<pwr)
+    while (HEATING<lpwr)
     {
         P2OUT|=mask;
         mask<<=1;
@@ -21,14 +25,14 @@ void heating_on(int pwr)
     }
 
     // decrease power if needed
-    while (HEATING>pwr)
+    while (HEATING>lpwr)
     {
         P2OUT&=~mask;
         mask<<=1;
         if (mask>BIT5) mask=BIT3;
     }
 
-    heating_power = pwr;
+    heating_power = lpwr;
 }
 
 // set heating output and internall value

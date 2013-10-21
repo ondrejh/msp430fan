@@ -127,6 +127,13 @@ int use_command(char *cmdbuf)
         uart_puts(VERSION_STR);
     }
 
+    // print fuse command: "F?"
+    if ((cmdlen==2) && (cmdbuf[0]=='F') && (cmdbuf[1]=='?'))
+    {
+        if (fuse_switch) uart_puts("ON\n\r");
+        else uart_puts("OFF\n\r");
+    }
+
     // print temp command: "TX?"
     if ((cmdlen==3) && (cmdbuf[0]=='T') && (cmdbuf[1]>='1') && (cmdbuf[1]<='5') && (cmdbuf[2]=='?'))
     {
