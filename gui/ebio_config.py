@@ -1,7 +1,8 @@
 #! /usr/bin/env python3
 
 ''' serial port setup '''
-portname = 'COM7'
+#portname = 'COM7'
+portname = '/dev/ttyACM0'
 
 ''' MySQL server setup:
 Assuming database 'ebio' with table 'temp' and 'heating' is present on the server.
