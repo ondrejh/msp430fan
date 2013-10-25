@@ -2,9 +2,12 @@
 
 import pymysql
 import fan_comm
-from time import sleep
+from time import sleep,strftime
 from ebio_config import *
 
+# log file
+log = False
+logfilename = None
 
 while True:
     #connect to db
@@ -23,7 +26,15 @@ while True:
     
     #read actual real temperatures and output status
     val = fan_comm.comm(portname,['T1?\n','T2?\n','T3?\n','T4?\n','T5?\n','H?\n','F?\n'])
-    #print(val)
+    if (log == False) and (val[6]=='ON'): #start log
+        log = True
+        logfilename = log_path+strftime('%y%m%d_%H%M_')+log_rootname+'.'+log_extension
+    if (log == True): #log
+        logfile = open(logfilename,'a')
+        logfile.write(val[0]+'; '+val[1]+'; '+val[2]+'; '+val[3]+'; '+val[4]+'; '+val[5]+'; '+val[6]+'\n')
+        logfile.close()
+    if (log == True) and (val[6]=='OFF') and (float(val[0][:-1])<35.0): #stop log
+        log = False
 
     #compare and update temperatures
     for i in range(0,5):
