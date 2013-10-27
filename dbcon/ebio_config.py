@@ -1,8 +1,8 @@
 #! /usr/bin/env python3
 
 ''' serial port setup '''
-#portname = 'COM7'
-portname = '/dev/ttyACM0'
+portname = 'COM7'
+#portname = '/dev/ttyACM0'
 
 ''' MySQL server setup:
 Assuming database 'ebio' with table 'temp' and 'heating' is present on the server.
@@ -18,17 +18,22 @@ Table 'temp' should look like:
 +------+-------+
 where 'id' is type int and 'value' is type varchar.
 Table 'heating' should look like:
-+---------+--------+
-| request | status |
-+---------+--------+
-| OFF     | OFF    |
-+---------+--------+
++---------+--------+------+
+| request | status | fuse |
++---------+--------+------+
+| OFF     | OFF    | OFF  |
++---------+--------+------+
 Settings:'''
-#db_host = '192.168.113.80'
-db_host = 'localhost'
+db_host = '192.168.113.80'
+#db_host = 'localhost'
 db_user = 'root'
-#db_pass = '1234'
-db_pass = ''
+db_pass = '1234'
+#db_pass = ''
 db_name = 'ebio'
 db_temp_table = 'temp'
 db_heating_table = 'heating'
+
+''' log settings '''
+log_path = ''
+log_rootname = 'ebiolog'
+log_extension = 'log'
