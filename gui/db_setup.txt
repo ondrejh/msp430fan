@@ -3,6 +3,11 @@ Install MySQL:
 	#apt-get install mysql-server mysql-client
 	set password during the installation (1234 for example)
 
+	git clone https://github.com/PyMySQL/PyMySQL.git
+	cd PyMySQL
+	#apt-get install python3-setuptools
+	#python3 ./setup.py install
+
 Create database:
 
 	run client and input password: #mysql -u root -p
