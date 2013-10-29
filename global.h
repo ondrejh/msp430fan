@@ -15,9 +15,10 @@ typedef struct heating_auto_settings heating_auto_settings;
 
 struct heating_auto_settings{
     int channel;
-    int temperature1;
+    int temperature;
+    /*int temperature1;
     int temperature2;
-    int temperature3;
+    int temperature3;*/
     int hysteresis;
 };
 
