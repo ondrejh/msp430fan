@@ -13,7 +13,9 @@
 //          --|RST              |
 //            |             P1.0|--> COMMUNICATION LED
 //            |                 |
-//            |             P1.6|--> Heating output
+//            |             P2.3|-->
+//            |             P2.4|--> 3stage heating output
+//            |             P2.5|-->
 //            |                 |
 //            | internal    P1.5|<---> Temp. 1. (sensor DS18B20)
 //            | sensor      P2.0|<---> Temp. 2.
@@ -79,9 +81,6 @@ void global_init(void)
 
     hauto.channel=1; // T2
     hauto.temperature=79*16;
-    /*hauto.temperature1=79*16; // 79C
-    hauto.temperature2=75*16; // 75C
-    hauto.temperature3=70*16; // 70C*/
     hauto.hysteresis=8; // 0.5C
 
     fuse_switch = SWITCH();
