@@ -13,3 +13,4 @@ hw/objednavka.*
 gui/__pycache__/
 gui/ebio.xml
 dbcon/*.log
+dbcon/__pycache__/

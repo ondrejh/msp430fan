@@ -13,7 +13,9 @@
 //          --|RST              |
 //            |             P1.0|--> COMMUNICATION LED
 //            |                 |
-//            |             P1.6|--> Heating output
+//            |             P2.3|-->
+//            |             P2.4|--> 3stage heating output
+//            |             P2.5|-->
 //            |                 |
 //            | internal    P1.5|<---> Temp. 1. (sensor DS18B20)
 //            | sensor      P2.0|<---> Temp. 2.
@@ -78,10 +80,8 @@ void global_init(void)
     heating_power = 0;
 
     hauto.channel=1; // T2
-    hauto.temperature1=1264;// 79*16;   // 79C
-    hauto.temperature2=1256;// 78.5*16; // 75C
-    hauto.temperature3=1248;// 78*16;   // 78C
-    hauto.hysteresis=4; // 0.25C
+    hauto.temperature=79*16;
+    hauto.hysteresis=8; // 0.5C
 
     fuse_switch = SWITCH();
 }
@@ -102,6 +102,29 @@ int temp_read_conversion(void)
     ADC10CTL0&=~ENC;            //disable adc conv
     return(int) (long)((((long)t - 673) * 423) / 64);
     //return(int) ((t * 27069L - 18169625L)>>12);   //convert and pass
+}
+
+/**
+ * temperature regulation function
+ *
+ * input .. temperature
+ * output .. power 0..3
+ **/
+int auto_heating(int temperature, bool valid)
+{
+    static int retval = 0;
+
+    if (valid)
+    {
+        if (temperature>(hauto.temperature+(2-retval)*hauto.hysteresis)) retval--;
+        else if (temperature<(hauto.temperature+(1-retval)*hauto.hysteresis)) retval++;
+
+        if (retval<0) retval=0;
+        if (retval>3) retval=3;
+    }
+    else retval = 0;
+
+    return retval;
 }
 
 // main program body
@@ -132,25 +155,9 @@ int main(void)
         if (heating==AUTO)
         {
             int chnl = (hauto.channel-1);
-            if ((t_err[chnl]==0) && (fuse_switch)) // measured value valid
+            if (fuse_switch)
             {
-                switch (heating_power)
-                {
-                    case 0:
-                        if (t_val[chnl]<(hauto.temperature1-hauto.hysteresis)) heating_power++;
-                        break;
-                    case 1:
-                        if (t_val[chnl]<(hauto.temperature2-hauto.hysteresis)) heating_power++;
-                        if (t_val[chnl]>(hauto.temperature1+hauto.hysteresis)) heating_power--;
-                        break;
-                    case 2:
-                        if (t_val[chnl]<(hauto.temperature3-hauto.hysteresis)) heating_power++;
-                        if (t_val[chnl]>(hauto.temperature2+hauto.hysteresis)) heating_power--;
-                        break;
-                    case 3:
-                        if (t_val[chnl]>(hauto.temperature3+hauto.hysteresis)) heating_power--;
-                        break;
-                }
+                heating_power = auto_heating(t_val[chnl],t_err[chnl]==0);
                 heating_on(heating_power);
             }
             else
