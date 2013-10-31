@@ -78,10 +78,10 @@ void global_init(void)
     heating_power = 0;
 
     hauto.channel=1; // T2
-    hauto.temperature1=79*16; // 79C
-    hauto.temperature2=75*16; // 75C
-    hauto.temperature3=70*16; // 70C
-    hauto.hysteresis=8; // 0.5C
+    hauto.temperature1=1264;// 79*16;   // 79C
+    hauto.temperature2=1256;// 78.5*16; // 75C
+    hauto.temperature3=1248;// 78*16;   // 78C
+    hauto.hysteresis=4; // 0.25C
 
     fuse_switch = SWITCH();
 }
@@ -137,14 +137,14 @@ int main(void)
                 switch (heating_power)
                 {
                     case 0:
-                        if (t_val[chnl]<(hauto.temperature3-hauto.hysteresis)) heating_power++;
+                        if (t_val[chnl]<(hauto.temperature1-hauto.hysteresis)) heating_power++;
                         break;
                     case 1:
                         if (t_val[chnl]<(hauto.temperature2-hauto.hysteresis)) heating_power++;
                         if (t_val[chnl]>(hauto.temperature1+hauto.hysteresis)) heating_power--;
                         break;
                     case 2:
-                        if (t_val[chnl]<(hauto.temperature1-hauto.hysteresis)) heating_power++;
+                        if (t_val[chnl]<(hauto.temperature3-hauto.hysteresis)) heating_power++;
                         if (t_val[chnl]>(hauto.temperature2+hauto.hysteresis)) heating_power--;
                         break;
                     case 3:
