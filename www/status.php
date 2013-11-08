@@ -4,8 +4,6 @@
 	<META HTTP-EQUIV="refresh" CONTENT="3">
 
 	<?php
-		echo "PHP MySQL dump test page:<br>\n";
-
 		$con = mysqli_connect("localhost","root","1234","ebio");
 
 		// check connection
@@ -52,6 +50,11 @@
 
 		mysqli_close($con);
 		echo "<br>\n";
+		
+		#stop button
+		echo "<form method='get' action='stop.php'>\n";
+		echo "	<button class='btnleft' type='submit' name='action' value='stop'>STOP</button>\n";
+		echo "</form>\n";	
 	?>
 
 </p>       
