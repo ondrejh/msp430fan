@@ -4,25 +4,40 @@ import pymysql
 import fan_comm
 from time import sleep,strftime
 from ebio_config import *
+import sys
+import os
 
 # log file
 log = False
 logfilename = None
 
+print('''{}: started'''.format(os.path.basename(sys.argv[0])))
+
+#connect to db
+conn = pymysql.connect(host=db_host,user=db_user,passwd=db_pass)
+conn.autocommit(True)
+cur = conn.cursor()
+
+cur.execute('''UPDATE {}.{} SET status='STARTING', tstamp=current_timestamp;'''.format(db_name,db_progstat_table))
+
+print('''{}: database connected'''.format(os.path.basename(sys.argv[0])))
+
 while True:
-    #connect to db
-    conn = pymysql.connect(host=db_host,user=db_user,passwd=db_pass)
-    conn.autocommit(True)
-    cur = conn.cursor()
 
     #read temperatures from table
     cur.execute('SELECT * FROM {}.{}'.format(db_name,db_temp_table))
     tdb = cur.fetchall()
+    #print(tdb)
 
     #read output request and status from table
     cur.execute('SELECT * FROM {}.{}'.format(db_name,db_heating_table))
     hdb = cur.fetchall()[0]
     #print(hdb)
+
+    #read program status table
+    cur.execute('SELECT * FROM {}.{}'.format(db_name,db_progstat_table))
+    sdb = cur.fetchall()[0]
+    #print(sdb)
     
     #read actual real temperatures and output status
     val = fan_comm.comm(portname,['T1?\n','T2?\n','T3?\n','T4?\n','T5?\n','H?\n','F?\n'])
@@ -62,4 +77,16 @@ while True:
         #clear request
         cur.execute('''UPDATE {}.{} SET request='';'''.format(db_name,db_heating_table))
 
+    #check if program stop request .. if not, update timestamp
+    if sdb[0]=='STOP':
+        cur.execute('''UPDATE {}.{} SET request='', status='STOPPED';'''.format(db_name,db_progstat_table))
+        break
+    else:
+        cur.execute('''UPDATE {}.{} SET status='RUNNING', tstamp=current_timestamp;'''.format(db_name,db_progstat_table))
+
     sleep(1)    
+
+cur.close()
+conn.close()
+
+print('''{}: stopped'''.format(os.path.basename(sys.argv[0])))

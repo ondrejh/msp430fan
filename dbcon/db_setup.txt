@@ -20,6 +20,8 @@ Create database:
 		insert into temp (id value) values (1,''),(2,''),(3,''),(4,''),(5,'');
 		create table heating (request VARCHAR(32), status VARCHAR(32), fuse VARCHAR(32));
 		insert into heating (request,status,fuse) values ('','','');
+		create table progstat (request VARCHAR(32), status VARCHAR(32), tstamp TIMESTAMP);
+		insert into progstat (request,status) values ('','');
 
 	check if it works:
 	mysql>
@@ -28,4 +30,5 @@ Create database:
 		show tables;
 		select * from temp;
 		select * from heating;
+		select * from progstat;
 
