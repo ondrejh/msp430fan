@@ -11,6 +11,16 @@
 		{
 			echo "Failed to connect to MySQL: ".mysqli_connect_error();
 		}
+		
+		// check input
+		if ($_REQUEST["action"]=="stop")
+		{
+			// set stop request
+			$sql = "UPDATE ebio.progstat SET request='STOP'";
+			$result=mysqli_query($con,$sql);
+			// reload page (without action='stop')
+			echo "<meta http-equiv=\"refresh\" content=\"1;url=index.php\">";
+		}
 
 		$t1 = "---";
 		for ($id=1;$id<6;$id++)
@@ -52,8 +62,9 @@
 		echo "<br>\n";
 		
 		#stop button
-		echo "<form method='get' action='stop.php'>\n";
-		echo "	<button class='btnleft' type='submit' name='action' value='stop'>STOP</button>\n";
+		echo "<form method='get' action='index.php'>\n";
+		echo "	<button class='btnstop' type='submit' name='action' value='stop'>STOP</button>\n";
+		//echo "	<button class='btnstart' type='submit' name='action' value='start'>START</button>\n";
 		echo "</form>\n";	
 	?>
 
