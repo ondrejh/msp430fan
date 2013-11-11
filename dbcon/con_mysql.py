@@ -18,7 +18,7 @@ conn = pymysql.connect(host=db_host,user=db_user,passwd=db_pass)
 conn.autocommit(True)
 cur = conn.cursor()
 
-cur.execute('''UPDATE {}.{} SET status='STARTING', tstamp=current_timestamp;'''.format(db_name,db_progstat_table))
+cur.execute('''UPDATE {}.{} SET request='', status='STARTING', tstamp=current_timestamp;'''.format(db_name,db_progstat_table))
 
 print('''{}: database connected'''.format(os.path.basename(sys.argv[0])))
 
