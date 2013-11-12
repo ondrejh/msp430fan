@@ -22,12 +22,13 @@
 		echo "<meta http-equiv=\"refresh\" content=\"1;url=index.php\">";
 	}
 
+	// temperatures
 	$t1 = "---";
 	for ($id=1;$id<6;$id++)
 	{
 		$sql = "SELECT value FROM temp WHERE id=$id";
 		//echo $sql."<br>\n";
-			if ($result=mysqli_query($con,$sql))
+		if ($result=mysqli_query($con,$sql))
 		{
 			// get field information
 			$fielddata=mysqli_fetch_row($result);
@@ -42,6 +43,7 @@
 		}
 	}
 
+	// heating status
 	$sql = "SELECT * FROM heating";
 	if ($result=mysqli_query($con,$sql))
 	{
@@ -50,6 +52,30 @@
 		printf("Heating status: %s<br>\n",$fielddata[1]);
 		printf("Fuse switch: %s<br>\n",$fielddata[2]);
 
+		// free result set
+		mysqli_free_result($result);
+	}
+	
+	// server status
+	$sql = "SELECT * FROM progstat";
+	if ($result=mysqli_query($con,$sql))
+	{
+		// get data
+		$fielddata = mysqli_fetch_row($result);
+		printf("Server status: %s<br>\n",$fielddata[1]);
+		
+		// test if data actual (if not server stopped)
+		if ($fielddata[1]!='STOPPED')
+		{
+			$tdif = time()-strtotime($fielddata[2]);
+			// if data older than 30sec and no STOPPED status set, rewrite it
+			if ($tdif<30)
+			{
+				$sql = "UPDATE ebio.progstat SET status='STOPPED'";
+				$result=mysqli_query($con,$sql);
+			}
+		}
+		
 		// free result set
 		mysqli_free_result($result);
 	}
