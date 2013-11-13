@@ -17,6 +17,9 @@ def set_stop():
 
     cur.execute('''UPDATE {}.{} SET request='STOP';'''.format(db_name,db_progstat_table))
 
+    cur.close()
+    conn.close()
+
     print('''{}: stop flag set'''.format(os.path.basename(sys.argv[0])))
     
 
