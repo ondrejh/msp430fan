@@ -53,6 +53,9 @@ def main():
         #read actual real temperatures and output status
         val = fan_comm.comm(portname,['T1?\n','T2?\n','T3?\n','T4?\n','T5?\n','H?\n','F?\n'])
 
+        #add values into log table
+        cur.execute('''INSERT INTO {}.{} (t1,t2,t3,t4,t5,h,f) values(\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\');'''.format(db_name,db_log_table,val[0],val[1],val[2],val[3],val[4],val[5],val[6]))
+
         #compare and update temperatures
         for i in range(0,5):
             #temperatures

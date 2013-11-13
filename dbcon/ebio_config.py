@@ -33,6 +33,7 @@ db_name = 'ebio'
 db_temp_table = 'temp'
 db_heating_table = 'heating'
 db_progstat_table = 'progstat'
+db_log_table = 'log'
 
 ''' log settings '''
 log_path = ''

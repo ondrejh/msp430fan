@@ -22,6 +22,7 @@ Create database:
 		insert into heating (request,status,fuse) values ('','','');
 		create table progstat (request VARCHAR(32), status VARCHAR(32), tstamp TIMESTAMP);
 		insert into progstat (request,status) values ('','');
+		create table log (t1 VARCHAR(32), t2 VARCHAR(32), t3 VARCHAR(32), t4 VARCHAR(32), t5 VARCHAR(32), h varchar(32), f varchar(32), tstamp timestamp);
 
 	check if it works:
 	mysql>
