@@ -2,7 +2,7 @@
 
 import pymysql
 from ebio_config import *
-from pylab import *
+#from pylab import *
 import sys
 import datetime
 
@@ -62,7 +62,7 @@ def split_log(splitinterval=datetime.timedelta(seconds=15)):
     cur.close()
     conn.close()
 
-def show_temperature(tablename=db_log_table, whattoshow=['t1','t2','t3','t4','t5'], showinterval=None, filename=None, showlegend=True):
+def save_to_datfile(tablename=db_log_table, whattoshow=['t1','t2','t3','t4','t5'], showinterval=None, filename=None, showlegend=True):
     ''' create chart out of db data
     arguments:
       whattoshow .. list of columns to show (t1 .. t5) (list of strings)
@@ -90,7 +90,7 @@ def show_temperature(tablename=db_log_table, whattoshow=['t1','t2','t3','t4','t5
     else:
         sqlwhat = sqlwhat[1:]
     sqlwhat += ',tstamp'
-    sql = '''select {} from {}.{} order by tstamp desc'''.format(sqlwhat,db_name,db_log_table)
+    sql = '''select {} from {}.{} order by tstamp desc'''.format(sqlwhat,db_name,tablename)
     if showinterval!=None:
         sql += ''' where tstamp>\'{}\';'''.format((datetime.datetime.now()-showinterval).strftime('%Y-%m-%d %H:%M:%S'))
     #print(strlegend)
@@ -114,20 +114,35 @@ def show_temperature(tablename=db_log_table, whattoshow=['t1','t2','t3','t4','t5
         for c in range(0,len(strlegend)):
             tmp[c].append(temp2float(dbdata[i][c]))
 
-    for c in range(0,len(strlegend)):
-        plot(tim,tmp[c])
-    xlabel('time')
-    ylabel('temperature [°C]')
-    if showlegend:
-        legend(strlegend)
-    grid(True)
-    if filename==None:
-        show()
-    else:
-        savefig(filename)
-        
-    return tim
+    f = open(filename,'w')
+    f.write('#t')
+    for i in range(0,len(strlegend)):
+        f.write(',{}'.format(strlegend[i]))
+        if i==(len(strlegend)-1):
+            f.write('\n')
+
+    tend=tim[0]
+    for i in range(0,len(tim)):
+        #f.write('\"{}\"'.format(tim[i].strftime('%Y-%m-%d %H:%M:%S')))
+        f.write('{}'.format((tend-tim[i]).total_seconds()))
+        for j in range(0,len(strlegend)):
+            f.write(',{}'.format(tmp[j][i]))
+            if j==len(strlegend)-1:
+                f.write('\n')
+
+    f.close()
+
+    #for c in range(0,len(strlegend)):
+    #    plot(tim,tmp[c])
+    #xlabel('time')
+    #ylabel('temperature [°C]')
+    #if showlegend:
+    #    legend(strlegend)
+    #grid(True)
+    #if filename==None:
+    #    show()
+    #else:
+    #    savefig(filename)
 
 if __name__ == "__main__":
-    #show_temperature(stopatpause=datetime.timedelta(minutes=1))
-    show_temperature(whattoshow=['t1','t2','t4'],filename='chart.png')
+    save_to_datfile(filename='ahoj.txt',whattoshow=['t1'])
