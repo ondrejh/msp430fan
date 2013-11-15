@@ -105,30 +105,24 @@ def save_to_datfile(tablename=db_log_table, whattoshow=['t1','t2','t3','t4','t5'
 
     #use data
     tmp=[]
-    for i in range(0,len(strlegend)):
-        tmp.append([])
     tim = []
     for i in range (0,len(dbdata)):
         tact = dbdata[i][len(strlegend)]
         tim.append(tact)
+        tmp.append([])
         for c in range(0,len(strlegend)):
-            tmp[c].append(temp2float(dbdata[i][c]))
+            tmp[i].append(temp2float(dbdata[i][c]))
 
     f = open(filename,'w')
-    f.write('#t')
-    for i in range(0,len(strlegend)):
-        f.write(',{}'.format(strlegend[i]))
-        if i==(len(strlegend)-1):
-            f.write('\n')
 
     tend=tim[0]
-    for i in range(0,len(tim)):
-        #f.write('\"{}\"'.format(tim[i].strftime('%Y-%m-%d %H:%M:%S')))
-        f.write('{}'.format((tend-tim[i]).total_seconds()))
-        for j in range(0,len(strlegend)):
-            f.write(',{}'.format(tmp[j][i]))
-            if j==len(strlegend)-1:
-                f.write('\n')
+    for c in range(0,len(strlegend)):
+        f.write('#\"{}\"\n'.format(strlegend[c]))
+        for i in range(0,len(tim)):
+            f.write('{:.2f} {}\n'.format((tend-tim[i]).total_seconds()/60,tmp[i][c])) #minutes
+
+        if c!=len(strlegend)-1:
+            f.write('\n\n\n')
 
     f.close()
 
@@ -145,4 +139,4 @@ def save_to_datfile(tablename=db_log_table, whattoshow=['t1','t2','t3','t4','t5'
     #    savefig(filename)
 
 if __name__ == "__main__":
-    save_to_datfile(filename='ahoj.txt',whattoshow=['t1'])
+    save_to_datfile(filename='data.dat',whattoshow=['t1','t2','t5'])
