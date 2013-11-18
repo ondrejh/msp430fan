@@ -126,8 +126,10 @@ margin-right:27px;
 color:#999999;
 }
 
-#t1
-{
+img.center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .contentTitle
