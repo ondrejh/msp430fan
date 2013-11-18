@@ -33,8 +33,8 @@ Template header informations:
 		</div>
 
 		<div id="bar">
-			<div class="link"><a href="#">home</a></div>
-			<div class="link"><a href="#">about</a></div>
+			<div class="link"><a href="index.php">info</a></div>
+			<div class="link"><a href="show_chart.php">grafy</a></div>
 			<div class="link"><a href="#">portfolio</a></div>
 			<div class="link"><a href="#">prices</a></div>
 			<div class="link"><a href="#">products</a></div>

@@ -5,6 +5,7 @@ from ebio_config import *
 #from pylab import *
 import sys
 import datetime
+import subprocess
 
 def temp2float(t):
     if t[-1] == 'C':
@@ -15,6 +16,22 @@ def temp2float(t):
         except:
             return None
     return None
+
+def fuse2int(f):
+    if f=='ON':
+        return 1
+    elif f=='OFF':
+        return 0
+    return None
+
+def heating2int(h):
+    if h[-1]=='1':
+        return 1
+    elif h[-1]=='2':
+        return 2
+    elif h[-1]=='3':
+        return 3
+    return 0
 
 def split_log(splitinterval=datetime.timedelta(seconds=15)):
     ''' it should search log database table for pause
@@ -76,15 +93,19 @@ def save_to_datfile(tablename=db_log_table, whattoshow=['t1','t2','t3','t4','t5'
     cur = conn.cursor()
 
     if whattoshow==None:
-        whattoshow=['t1','t2','t3','t4','t5']
+        whattoshow=['t1','t2','t3','t4','t5','f','h']
     sqlwhat=''
     strlegend=[]
     for s in whattoshow:
         sqlwhat+=',{}'.format(s)
-        if s!='t5':
-            strlegend.append(s)
-        else:
+        if s=='t5':
             strlegend.append('mcu')
+        elif s=='f':
+            strlegend.append('fuse')
+        elif s=='h':
+            strlegend.append('heating')
+        else:
+            strlegend.append(s)
     if sqlwhat=='':
         print('No data to show selected')
     else:
@@ -104,22 +125,30 @@ def save_to_datfile(tablename=db_log_table, whattoshow=['t1','t2','t3','t4','t5'
     conn.close()
 
     #use data
-    tmp=[]
+    data=[]
     tim = []
     for i in range (0,len(dbdata)):
         tact = dbdata[i][len(strlegend)]
         tim.append(tact)
-        tmp.append([])
+        data.append([])
         for c in range(0,len(strlegend)):
-            tmp[i].append(temp2float(dbdata[i][c]))
+            if strlegend[c]=='fuse':
+                data[i].append(fuse2int(dbdata[i][c]))
+            if strlegend[c]=='heating':
+                data[i].append(heating2int(dbdata[i][c]))
+            else:
+                data[i].append(temp2float(dbdata[i][c]))
 
     f = open(filename,'w')
 
     tend=tim[0]
+    tstart=tim[-1]
+    dlen = len(data)
     for c in range(0,len(strlegend)):
         f.write('#\"{}\"\n'.format(strlegend[c]))
-        for i in range(0,len(tim)):
-            f.write('{:.2f} {}\n'.format((tend-tim[i]).total_seconds()/60,tmp[i][c])) #minutes
+        for i in range(1,dlen):
+            if data[-i][c]!=None:
+                f.write('{:.2f} {}\n'.format((tim[-i]-tstart).total_seconds()/60,data[-i][c])) #minutes
 
         if c!=len(strlegend)-1:
             f.write('\n\n\n')
@@ -139,4 +168,5 @@ def save_to_datfile(tablename=db_log_table, whattoshow=['t1','t2','t3','t4','t5'
     #    savefig(filename)
 
 if __name__ == "__main__":
-    save_to_datfile(filename='data.dat',whattoshow=['t1','t2','t5'])
+    save_to_datfile(filename='data.dat',whattoshow=['t1','t2','t5','h','f'])
+    subprocess.call(['gnuplot','gnuplot.gp'], shell=True)

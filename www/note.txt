@@ -1,0 +1,1 @@
+Here should be also "script" folder with "plot.sh", "plot_data.gp", "chart_tools.py" and "ebio_config.py" files in it. The folder should be owned by www-data user with read/write/execute permissions. The files should be owned by www-data too and "plot.sh" script should be set executable.
