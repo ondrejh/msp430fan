@@ -76,7 +76,8 @@ void global_init(void)
         t_val[i] = 0;
         t_err[i] = 1;
     }
-    heating = AUTO;
+    //heating = AUTO;
+    heating = OFF;
     heating_power = 0;
 
     hauto.channel=1; // T2
