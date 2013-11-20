@@ -1,0 +1,5 @@
+python-daemon for python3:
+
+	git clone https://github.com/redsymbol/python-daemon-1.5.5-py3k.git
+	cd python-daemon-1.5.5-py3k
+	python3 setup.py install
